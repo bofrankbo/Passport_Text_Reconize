@@ -14,12 +14,27 @@ import numpy as np
 
 from ocr_passport import OCRPassport
 
-
 current_file_path = os.path.abspath(__file__)
-
 print(f"Current file path: {current_file_path}")
 
 app = Flask(__name__)
+
+# 確保資料夾存在
+UPLOAD_FOLDER = "upload_images"
+CSV_FILE_PATH = "user_data.csv"
+
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
+if not os.path.exists(CSV_FILE_PATH):
+    # 初始化 CSV 檔案，確保有標題行
+    with open(CSV_FILE_PATH, mode='w', newline='', encoding='utf-8') as csv_file:
+        csv_writer = csv.writer(csv_file)
+        csv_writer.writerow([
+            "name", "surname", "sex", "date_of_birth", "nationality",
+            "passport_type", "passport_number", "issuing_country",
+            "expiration_date", "personal_number"
+        ])
 
 @app.route("/model.html")
 def model():
@@ -50,7 +65,6 @@ def root():
     return render_template("index.html")
 
 @app.route("/process_passport",methods=["POST"])
-
 def process_passport():
     print("process_passport")
     # 檢查是否有上傳圖片
@@ -71,18 +85,50 @@ def process_passport():
     print("user_info", user_info)
     # text_passport = format_user_info(user_info)
 
-    text_passport = (
-        f"Name: {user_info['name']}, "
-        f"Surname: {user_info['surname']}, "
-        f"Sex: {user_info['sex']}, "
-        f"Date of Birth: {user_info['date_of_birth']}, "
-        f"Nationality: {user_info['nationality']}, "
-        f"Passport Type: {user_info['passport_type']}"
-    )
-
     # 返回辨識結果
-    return jsonify({"success": True, "result": text_passport})
-    
+    return jsonify({"success": True, "result": user_info})
+
+@app.route("/submit_passport",methods=["POST"])
+def submit_passport():
+    try:
+        # 接收 JSON 資料
+        user_info = request.get_json()
+        if not user_info:
+            return jsonify({"success": False, "error": "No data received"}), 400
+
+        # 確保所有必要欄位都有值
+        required_fields = [
+            "name", "surname", "sex", "date_of_birth", "nationality",
+            "passport_type", "passport_number", "issuing_country",
+            "expiration_date", "personal_number"
+        ]
+        for field in required_fields:
+            if field not in user_info:
+                return jsonify({"success": False, "error": f"Missing field: {field}"}), 400
+
+        # 儲存到 CSV 檔案
+        with open(CSV_FILE_PATH, mode='a', newline='', encoding='utf-8') as csv_file:
+            csv_writer = csv.writer(csv_file)
+            csv_writer.writerow([
+                user_info.get("name", ""),
+                user_info.get("surname", ""),
+                user_info.get("sex", ""),
+                user_info.get("date_of_birth", ""),
+                user_info.get("nationality", ""),
+                user_info.get("passport_type", ""),
+                user_info.get("passport_number", ""),
+                user_info.get("issuing_country", ""),
+                user_info.get("expiration_date", ""),
+                user_info.get("personal_number", "")
+            ])
+
+        return jsonify({"success": True}), 200
+
+    except Exception as e:
+        print(f"Error processing data: {e}")
+        return jsonify({"success": False, "error": "Internal server error"}), 500
+
+
 if __name__ == '__main__':
     #定義app在8080埠運行
     app.run(host="0.0.0.0",port=8000,debug=True)

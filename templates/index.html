@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-Hant-TW">
 
 <head>
     <meta charset="utf-8" />
@@ -44,7 +44,7 @@
         </nav>
 
         <!-- Page Header-->
-        <header class="masthead" style="background-image: url('../static/assets/img/home-bg.jpg')">
+        <header class="masthead" style="background-image: url('../static/assets/img/about-bg.jpg')">
             <div class="container position-relative px-4 px-lg-5">
                 <div class="row gx-4 gx-lg-5 justify-content-center">
                     <div class="col-md-10 col-lg-8 col-xl-7">
@@ -67,16 +67,59 @@
                         <!-- <video id="camera" autoplay playsinline style="width: 100%; height: auto; border: 1px solid #ccc;"></video> -->
                         <input type="file" id="imageInput" accept="image/*" class="form-control mt-3">
                         <button id="captureButton" class="btn btn-primary mt-3">辨識</button>
-                        <text id="scanning" style="display: block;">正在辨識中 </text>
+                        <text id="scanning" style="display: none;">正在辨識中 </text>
                     </div>
 
                     <!-- OCR Result Section -->
 
                     <div id="resultContainer" class="mt-4">
                         <h5>辨識結果：</h5>
-                        <textarea id="resultText" class="form-control" rows="5" readonly></textarea>
-                        <button id="confirmButton" class="btn btn-success mt-3" >確認並提交</button>
+                        <form id="resultForm">
+                            <div class="form-group">
+                                <label for="nameField">名：</label>
+                                <input type="text" id="nameField" class="form-control" value="" />
+                            </div>
+                            <div class="form-group mt-3">
+                                <label for="surnameField">姓：</label>
+                                <input type="text" id="surnameField" class="form-control" value="" />
+                            </div>
+                            <div class="form-group mt-3">
+                                <label for="sexField">性別：</label>
+                                <input type="text" id="sexField" class="form-control" value="" />
+                            </div>
+                            <div class="form-group mt-3">
+                                <label for="dobField">出生日期：</label>
+                                <input type="text" id="dobField" class="form-control" value="" />
+                            </div>
+                            <div class="form-group mt-3">
+                                <label for="nationalityField">國籍：</label>
+                                <input type="text" id="nationalityField" class="form-control" value="" />
+                            </div>
+                            <div class="form-group mt-3">
+                                <label for="passportTypeField">護照類型：</label>
+                                <input type="text" id="passportTypeField" class="form-control" value="" />
+                            </div>
+                            <div class="form-groupmt-3">
+                                <label for="passport_numberField">護照號碼：</label>
+                                <input type="text" id="passport_numberField" class="form-control" value="" />
+                            </div>
+                            <div class="form-group mt-3">
+                                <label for="issuing_countryField">發行國：</label>
+                                <input type="text" id="issuing_countryField" class="form-control" value="" />
+                            </div>
+                            <div class="form-group mt-3">
+                                <label for="expiration_dateField">到期日：</label>
+                                <input type="text" id="expiration_dateField" class="form-control" value="" />
+                            </div>
+                            <div class="form-group mt-3">
+                                <label for="personal_numberField">身分證：</label>
+                                <input type="text" id="personal_numberField" class="form-control" value="" />
+                            </div>
+                            
+                        </form>
+                        <button id="confirmButton" class="btn btn-success mt-3">確認並提交</button>
                     </div>
+                    
                 </div>
             </div>
         </div>
@@ -146,57 +189,84 @@
                         method: 'POST',
                         body: formData, // 傳送 FormData
                     })
-                        .then((response) => response.json())
-                        .then((data) => {
-                            text_scan.style.display = "none"; // 隱藏 "正在辨識中"
-                            if (data.success) {
-                                alert("辨識成功！結果如下：\n" + data.result); // 彈出辨識結果
-                            } else {
-                                alert("辨識失敗，請重新嘗試。");
-                            }
-                        })
-                        .catch((error) => {
-                            console.error('Error:', error);
-                            text_scan.style.display = "none"; // 隱藏 "正在辨識中"
-                            alert("伺服器錯誤，請稍後再試。");
-                        });
+                    .then((response) => response.json())
+                    .then((data) => {
+                        text_scan.style.display = "none"; // 隱藏 "正在辨識中"
+                        if (data.success) {
+                            // 將辨識結果分別填入表單欄位
+                            document.getElementById('nameField').value = data.result.name;
+                            document.getElementById('surnameField').value = data.result.surname;
+                            document.getElementById('sexField').value = data.result.sex;
+                            document.getElementById('dobField').value = data.result.date_of_birth;
+                            document.getElementById('nationalityField').value = data.result.nationality;
+                            document.getElementById('passportTypeField').value = data.result.passport_type;
+                            document.getElementById('passport_numberField').value = data.result.passport_number;
+                            document.getElementById('issuing_countryField').value = data.result.issuing_country;
+                            document.getElementById('expiration_dateField').value = data.result.expiration_date;
+                            document.getElementById('personal_numberField').value = data.result.personal_number;
+                        } else {
+                            alert("辨識失敗，請重新嘗試。");
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                        text_scan.style.display = "none"; // 隱藏 "正在辨識中"
+                        alert("伺服器錯誤，請稍後再試。");
+                    });
                 } else {
                     alert("請先選擇一個檔案！");
                 }
             });
 
-            // 提交修正後的辨識結果
+            // 確認並提交按鈕的點擊事件
             document.getElementById('confirmButton').addEventListener('click', () => {
-                const correctedText = ocrResult.value;
-                fetch('/save_data', {
+                const name = document.getElementById('nameField').value;
+                const surname = document.getElementById('surnameField').value;
+                const sex = document.getElementById('sexField').value;
+                const dob = document.getElementById('dobField').value;
+                const nationality = document.getElementById('nationalityField').value;
+                const passportType = document.getElementById('passportTypeField').value;
+                const passport_number = document.getElementById('passport_numberField').value;
+                const issuing_country = document.getElementById('issuing_countryField').value;
+                const expiration_date = document.getElementById('expiration_dateField').value;
+                const personal_number = document.getElementById('personal_numberField').value;
+
+                // 將修改後的資料傳回伺服器
+                const updatedData = {
+                    name,
+                    surname,
+                    sex,
+                    date_of_birth : dob,
+                    nationality,
+                    passport_type : passportType,
+                    passport_number,
+                    issuing_country,
+                    expiration_date,
+                    personal_number,
+                };
+
+                fetch('/submit_passport', { // 替換為您的提交 API
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ text: correctedText })
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(updatedData),
                 })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.message) {
-                        alert('資料已成功儲存');
+                .then((response) => response.json())
+                .then((result) => {
+                    if (result.success) {
+                        alert('資料提交成功！');
                     } else {
-                        alert('儲存失敗，請重試');
+                        console.error('Error:', result.error);
+                        alert('提交失敗，請重試！', result.error);
                     }
                 })
-                .catch((error) => console.error('Error:', error));
+                .catch((error) => {
+                    console.error('Error:', error);
+                    alert('伺服器錯誤，請稍後再試。');
+                });
             });
-            // const imageInput = document.getElementById('imageInput');
 
-            // // 處理圖片上傳
-            // imageInput.addEventListener('change', (event) => {
-            //     const file = event.target.files[0];
-            //     if (file) {
-            //         const reader = new FileReader();
-            //         reader.onload = (e) => {
-            //             const imageData = e.target.result; // Base64 格式
-            //             sendToServer(imageData);
-            //         };
-            //         reader.readAsDataURL(file); // 讀取圖片並轉換為 Base64
-            //     }
-            // });
         </script>
     </body>
 </html>

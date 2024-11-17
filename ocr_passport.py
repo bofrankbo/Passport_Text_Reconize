@@ -110,6 +110,10 @@ class OCRPassport:
                 user_info['date_of_birth'] = self.parse_date(b[13:19])
                 user_info['nationality'] = self.get_country_name(self.clean(b[10:13]))
                 user_info['passport_type'] = self.clean(a[:2])
+                user_info['passport_number'] = self.clean(b[0:9])
+                user_info['issuing_country'] = self.get_country_name(self.clean(a[2:5]))
+                user_info['expiration_date'] = self.parse_date(b[21:27])
+                user_info['personal_number'] = self.clean(b[28:42])
 
                 return user_info
             else:
