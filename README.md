@@ -20,5 +20,7 @@ To set up the project, follow these steps:
     ```sh
     pip install -r requirements.txt
     ```
-2. Create a `.env` file and store `GOOGLE_API_KEY='your api key'` in it.
-3. Compile `app.py` to start the server for training and testing.
+2. 可能會有部分沒有裝到: opencv-python, PassportEye, easyocr
+3. 必須安裝 Tesseract OCR， 且一定要照建議路徑安裝
+4. Compile `app.py` to start the server for training and testing.
+5. 執行的時候可能會有要修改 library 的 bug，改完之後應該就沒問題了
