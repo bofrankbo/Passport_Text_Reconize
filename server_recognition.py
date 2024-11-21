@@ -21,7 +21,7 @@ app = Flask(__name__)
 
 # 確保資料夾存在
 UPLOAD_FOLDER = "upload_images"
-CSV_FILE_PATH = "user_data.csv"
+CSV_FILE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "user_data.csv")
 
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
@@ -55,10 +55,6 @@ def contact():
 @app.route("/index.html")
 def index():
     return render_template("index.html")
-
-@app.route("/crawl.html")
-def crawl():
-    return render_template("crawl.html")
 
 @app.route("/")
 def root():
