@@ -121,6 +121,7 @@ def suggest_trip():
     # 讀取 CSV 文件
     try:
         df = pd.read_csv(TRIP_FILE_PATH)
+        df = df.fillna("NaN")
     except Exception as e:
         return jsonify({"error": f"Error reading the CSV file: {e}"}), 500
 
@@ -229,30 +230,72 @@ def save_user_info(user_info):
 @app_admin.route("/add_trip", methods=["POST"])
 def add_trip():
     new_trip = request.get_json()
-    print(new_trip)
+
+    # 提取參與者的身分證字號
+    participants_list = [
+        participant['personalNumber']
+        for participant in new_trip.get("participants", [])
+        if "personalNumber" in participant
+    ]
 
     # 讀取現有的 CSV 資料
     df = pd.read_csv(TRIP_FILE_PATH)
 
-    # 設置新的行程 ID
-    new_trip["id"] = len(df) + 1
+    # 檢查是否有重複行程名稱
+    existing_trip = df[df["name"] == new_trip["name"]]
 
-    # 新行程的資料
-    new_trip_data = pd.DataFrame([{
-        "id": new_trip["id"],
-        "name": new_trip["name"],
-        "destination": new_trip["destination"],
-        "startDate": new_trip["startDate"],
-        "participants": ",".join(new_trip["participants"])
-    }])
+    if not existing_trip.empty:
+        # 如果行程名稱存在，更新該行程
+        df.loc[df["name"] == new_trip["name"], ["destination", "startDate", "participants"]] = [
+            new_trip["destination"],
+            new_trip["startDate"],
+            ";".join(participants_list)
+        ]
+        message = "行程已更新！"
+    else:
+        # 設置新的行程 ID
+        new_trip["id"] = len(df) + 1
 
-    # 使用 concat() 合併新行程資料
-    df = pd.concat([df, new_trip_data], ignore_index=True)
+        # 新行程的資料
+        new_trip_data = pd.DataFrame([{
+            "id": new_trip["id"],
+            "name": new_trip["name"],
+            "destination": new_trip["destination"],
+            "startDate": new_trip["startDate"],
+            "participants": ";".join(participants_list)
+        }])
+
+        # 使用 concat() 合併新行程資料
+        df = pd.concat([df, new_trip_data], ignore_index=True)
+        message = "行程已創建！"
 
     # 將資料寫回 CSV 檔案
     df.to_csv(TRIP_FILE_PATH, index=False, encoding='utf-8')
 
-    return jsonify({"message": "行程創建成功！", "trip": new_trip_data.to_dict(orient="records")[0]}), 201
+    return jsonify({"message": message, "trip": new_trip}), 200
+
+@app_admin.route("/get_traveler", methods=["GET"])
+def get_traveler():
+    personal_number = request.args.get("personalNumber")
+
+    if not personal_number:
+        return jsonify({"error": "Personal number is required"}), 400
+
+    try:
+        # 讀取旅客資料
+        df = pd.read_csv(EXCEL_FILE_PATH)
+        traveler = df[df["personal_number"] == personal_number].iloc[0]
+
+        # 返回旅客資訊
+        return jsonify({
+            "name": traveler["name"],
+            "surname": traveler["surname"],
+            "personalNumber": traveler["personal_number"],
+            "passportNumber": traveler["passport_number"]
+        }), 200
+    except IndexError:
+        return jsonify({"error": "No traveler found"}), 404
+
 
 
 if __name__ == '__main__':
