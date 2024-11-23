@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Admin Page</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+        <style>
+            .container {
+                margin-top: 50px;
+            }
+            .form-group {
+                margin-bottom: 20px;
+            }
+            .btn {
+                width: 100%;
+            }
+            /* Sidebar 基本樣式 */
+            .sidebar {
+                height: 100vh; /* 畫面高度 */
+                width: 200px; /* 側邊欄寬度 */
+                position: fixed; /* 固定在左側 */
+                top: 0;
+                left: 0;
+                background-color: #343a40; /* 更換為深色背景 */
+                box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* 添加陰影 */
+                display: flex;
+                flex-direction: column;
+                padding-top: 20px;
+                z-index: 1030; /* 確保高於其他元素 */
+            }
+
+            /* Navbar Brand 樣式 */
+            .sidebar .navbar-brand {
+                text-align: center; /* 文字置中 */
+                display: block;     /* 確保文字寬度占滿父容器 */
+                font-size: 1.5rem;  /* 增加字體大小 */
+                font-weight: bold;  /* 設置字體加粗 */
+                color: #fff;        /* 更換為白色文字 */
+                margin-bottom: 30px; /* 增加與下面內容的距離 */
+                margin-left: 0;     /* 移除不必要的左邊距 */
+            }
+
+            /* Sidebar 列表樣式 */
+            .sidebar .navbar-nav {
+                flex-grow: 1; /* 填滿空間 */
+                padding-left: 0;
+                font-size: 1.1rem;  /* 調整字體大小，適合內容 */
+                text-align: center; /* 列表項目文字置中 */
+                color: #adb5bd;     /* 默認文字顏色為灰色 */
+            }
+
+            /* Sidebar 列表項目樣式 */
+            .sidebar .nav-item {
+                margin-bottom: 10px; /* 調整間距 */
+            }
+
+            /* Sidebar 列表鏈接樣式 */
+            .sidebar .nav-link {
+                color: #adb5bd; /* 默認為灰色文字 */
+                font-size: 1rem; /* 字體大小 */
+                padding: 10px 15px; /* 調整內邊距 */
+                border-radius: 4px; /* 添加圓角 */
+                transition: background-color 0.3s ease, color 0.3s ease;
+                text-align: center; /* 保持文字置中 */
+                text-decoration: none; /* 去掉下劃線 */
+            }
+
+            /* Hover 效果 */
+            .sidebar .nav-link:hover {
+                background-color: #007bff; /* Hover 時背景顏色 */
+                color: #fff; /* Hover 時文字顏色 */
+            }
+
+            /* Active 狀態 */
+            .sidebar .nav-link.active {
+                background-color: #007bff; /* 當前頁面背景顏色 */
+                color: #fff; /* 當前頁面文字顏色 */
+            }
+
+            /* 調整內容區域的左邊距 */
+            body {
+                margin-left: 200px; /* 與 sidebar 寬度一致 */
+                transition: margin-left 0.3s ease; /* 平滑過渡效果 */
+                background-color: #f8f9fa; /* 主內容背景色 */
+                font-family: 'Arial', sans-serif; /* 字體設置 */
+            }
+        </style>
+    </head>
+    <body>
+        <nav class="navbar navbar-expand-lg navbar-light sidebar" id="mainNav">
+            <a class="navbar-brand mb-4 w-100" href="admin.html">後台管理系統</a>
+            <ul class="navbar-nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link py-2" href="admin.html">旅客資料</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link py-2" href="trip.html">設定行程</a>
+                </li>
+            </ul>
+        </nav>   
+
+        <div class="container">
+            <h1>行程設定</h1>
+            <h3>選擇行程</h3>
+            <div class="form-group" style="flex: 1; display: flex; align-items: center; margin-right: 20px;">
+                <input type="text" id="trip" class="form-control" placeholder="輸入行程關鍵字" oninput="suggestTrip()">
+                <button id="confirmBtn" class="btn btn-primary" onclick="confirmTrip()" style="margin-left: 10px;">確定</button>
+                <ul id="suggestions_trip" class="list-group" style="display: none; position: absolute; z-index: 100;"></ul>
+            </div>
+            
+            <div id="tripDetails" style="display: none;">
+                <h4>行程詳細資料</h4>
+                <div class="form-group">
+                    <label for="destination">目的地:</label>
+                    <input type="text" id="destination" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="startDate">開始時間:</label>
+                    <input type="datetime-local" id="startDate" class="form-control">
+                </div>
+                <!-- 顯示已選擇的旅客 -->
+                <h4>已選擇的旅客</h4>
+                <div id="selectedTravelers">
+                    <!-- 顯示查詢結果 -->
+                    <div id="result" class="alert alert-info" style="display: none;"></div>
+                    <!-- 這裡會顯示所有旅客 -->
+                </div>
+
+                <h3>加入旅客</h3>
+                <div class="form-group" style="display: flex; justify-content: space-between;">
+                    <div style="flex: 1;">
+                        <label for="personalNumber">身分證號：</label>
+                        <input type="text" id="personalNumber" class="form-control" placeholder="請輸入身分證號" oninput="suggestNumber()">
+                        <ul id="suggestions" class="list-group" style="display: none; position: absolute; z-index: 100;"></ul>
+                    </div>
+                    <div style="flex: 1; margin-left: 20px;">
+                        <label for="passportNumber">護照號碼：</label>
+                        <input type="text" id="passportNumber" class="form-control" placeholder="請輸入護照號碼" oninput="suggestNumber()">
+                        <ul id="suggestions_passport" class="list-group" style="display: none; position: absolute; z-index: 100;"></ul>
+                    </div>
+                    <button onclick="addPassenger()" class="btn btn-success">加入旅客</button>
+                </div>
+                <button onclick="saveOrUpdateTrip()" class="btn btn-success">創建/修改行程</button>
+                <!-- 匯出 CSV -->
+                <div class="form-group">
+                    <a href="/export_csv" class="btn btn-success">匯出此行程</a>
+                </div>
+            </div>
+        </div>
+        
+        
+        <script>
+            // 自動補全邏輯
+            function suggestNumber() {
+                const input = document.getElementById("personalNumber").value;
+                const input_passport = document.getElementById("passportNumber").value;
+                const suggestionsList = document.getElementById("suggestions");
+                const suggestionsPassportList = document.getElementById("suggestions_passport");
+                
+                if (!input && !input_passport) {
+                    suggestionsList.style.display = "none";
+                    suggestionsPassportList.style.display = "none";
+                    return;
+                }
+
+                // 根據身分證號查詢，發送請求
+                fetch(`/suggest?query=${input}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.length > 0) {
+                            suggestionsList.style.display = "block";
+                            suggestionsList.innerHTML = data
+                                .map(user => `
+                                    <li class="list-group-item" onclick='selected(${JSON.stringify(user)})'>
+                                        ${user.personal_number} - ${user.name} ${user.surname}
+                                    </li>`)
+                                .join("");
+                        } else {
+                            suggestionsList.style.display = "none";
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error fetching suggestions:", error);
+                    });
+                
+                // 根據護照號碼查詢，發送請求
+                fetch(`/suggest_passport?query=${input_passport}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.length > 0) {
+                            suggestionsPassportList.style.display = "block";
+                            suggestionsPassportList.innerHTML = data.map(user => `
+                                    <li class="list-group-item" onclick='selected(${JSON.stringify(user)})'>
+                                        ${user.passport_number} - ${user.name} ${user.surname}
+                                    </li>`)
+                                .join("");
+                        } else {
+                            suggestionsPassportList.style.display = "none";
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error fetching suggestions:", error);
+                    });
+            }
+
+            // 建議行程的函數
+            function suggestTrip() {
+                const tripKeyword = document.getElementById("trip").value;
+                const suggestionsList = document.getElementById("suggestions_trip");
+
+                if (tripKeyword) {
+                    fetch(`/suggest_trip?query=${tripKeyword}`, {
+                        method: 'GET',
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        suggestionsList.style.display = "block";
+                        suggestionsList.innerHTML = data.map(trip => `
+                            <li class="list-group-item" onclick='selectTrip(${JSON.stringify(trip)})'>
+                                ${trip.name} - ${trip.destination}
+                            </li>`).join('');
+                    })
+                    .catch(error => console.error("Error fetching trips:", error));
+                } else {
+                    suggestionsList.style.display = "none";
+                }
+            }
+
+            // 選擇建議的旅客
+            function selected(user) {
+                document.getElementById("personalNumber").value = user.personal_number;  // 確保正確引用 personal_number
+                document.getElementById("passportNumber").value = user.passport_number;  // 確保正確引用 passport_number
+                document.getElementById("suggestions").style.display = "none";
+                document.getElementById("suggestions_passport").style.display = "none";
+            }
+            
+            // 用戶選擇行程
+            function selectTrip(data) {
+                console.log(data);
+                document.getElementById("trip").value = data.name;  // 填充選擇的行程
+                document.getElementById("suggestions_trip").style.display = "none";
+                document.getElementById("destination").value = data.destination;  // 填充選擇的行程
+                document.getElementById("startDate").value = data.start_date;  // 填充選擇的行程
+
+            }
+
+            // 查詢用戶
+            function searchUser() {
+                const personalNumber = document.getElementById("personalNumber").value;
+                const passportNumber = document.getElementById("passportNumber").value;
+
+                if (!personalNumber && !passportNumber) {
+                    alert("請至少輸入身分證號或護照號碼！");
+                    return;
+                }
+
+                // 根據輸入的身分證號或護照號碼查詢
+                fetch(`/search?personal_number=${personalNumber}&passport_number=${passportNumber}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const resultDiv = document.getElementById("result");
+
+                        if (data.error) {
+                            resultDiv.style.display = "none";
+                            alert(data.error);
+                        } else {
+                            resultDiv.innerHTML = `
+                                <strong>名字:</strong> <input type="text" id="nameField" value="${data.name}" /><br>
+                                <strong>姓氏:</strong> <input type="text" id="surnameField" value="${data.surname}" /><br>
+                                <strong>性別:</strong> <input type="text" id="sexField" value="${data.sex}" /><br>
+                                <strong>出生日期:</strong> <input type="text" id="dobField" value="${data.date_of_birth}" /><br>
+                                <strong>國籍:</strong> <input type="text" id="nationalityField" value="${data.nationality}" /><br>
+                                <strong>護照類型:</strong> <input type="text" id="passportTypeField" value="${data.passport_type}" /><br>
+                                <strong>護照號碼:</strong> <input type="text" id="passport_numberField" value="${data.passport_number}" /><br>
+                                <strong>發證國:</strong> <input type="text" id="issuing_countryField" value="${data.issuing_country}" /><br>
+                                <strong>有效期限:</strong> <input type="text" id="expiration_dateField" value="${data.expiration_date}" /><br>
+                                <strong>身分證:</strong> <input type="text" id="personal_numberField" value="${data.personal_number}" /><br>
+                            `;
+                            resultDiv.style.display = "block";
+                        }
+                    })
+                    .catch(error => {
+                        alert("查詢時發生錯誤！請稍後再試。");
+                    });
+            }
+
+            /// 確認行程（選擇或創建）
+            function confirmTrip() {
+                const tripName = document.getElementById("trip").value;
+                
+                fetch(`/suggest_trip?name=${tripName}`, {
+                    method: 'GET'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.length > 0) {
+                        alert(`您選擇的行程是: ${data[0].name}`);
+                    } else {
+                        document.getElementById("tripDetails").style.display = "block";
+                    }
+                });
+            }
+
+            // 創建新行程
+            function saveNewTrip() {
+                const newTrip = {
+                    name: document.getElementById("trip").value,
+                    destination: document.getElementById("destination").value,
+                    startDate: document.getElementById("startDate").value,
+                    participants: document.getElementById("participants").value.split(","),
+                };
+
+                fetch("/add_trip", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(newTrip),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert("新行程已創建！");
+                    document.getElementById("tripDetails").style.display = "none";
+                })
+                .catch(error => console.error("Error saving new trip:", error));
+            }
+
+            // 渲染已選擇的旅客
+            function renderSelectedTravelers() {
+                const selectedTravelersDiv = document.getElementById("selectedTravelers");
+                selectedTravelersDiv.innerHTML = selectedTravelers.map((traveler, index) => `
+                    <div class="form-row">
+                        <input type="checkbox" id="traveler-${index}" checked>
+                        <span>${traveler.personalNumber} - ${traveler.passportNumber}</span>
+                        <button onclick="removeTraveler(${index})">刪除</button>
+                    </div>
+                `).join("");
+            }
+
+        </script>
+        
+    
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    </body>
+    </html>

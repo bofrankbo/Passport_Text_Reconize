@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Admin Page</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+        <style>
+            .container {
+                margin-top: 50px;
+            }
+            .form-group {
+                margin-bottom: 20px;
+            }
+            .btn {
+                width: 100%;
+            }
+            /* Sidebar 基本樣式 */
+            .sidebar {
+                height: 100vh; /* 畫面高度 */
+                width: 200px; /* 側邊欄寬度 */
+                position: fixed; /* 固定在左側 */
+                top: 0;
+                left: 0;
+                background-color: #343a40; /* 更換為深色背景 */
+                box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* 添加陰影 */
+                display: flex;
+                flex-direction: column;
+                padding-top: 20px;
+                z-index: 1030; /* 確保高於其他元素 */
+            }
+
+            /* Navbar Brand 樣式 */
+            .sidebar .navbar-brand {
+                text-align: center; /* 文字置中 */
+                display: block;     /* 確保文字寬度占滿父容器 */
+                font-size: 1.5rem;  /* 增加字體大小 */
+                font-weight: bold;  /* 設置字體加粗 */
+                color: #fff;        /* 更換為白色文字 */
+                margin-bottom: 30px; /* 增加與下面內容的距離 */
+                margin-left: 0;     /* 移除不必要的左邊距 */
+            }
+
+            /* Sidebar 列表樣式 */
+            .sidebar .navbar-nav {
+                flex-grow: 1; /* 填滿空間 */
+                padding-left: 0;
+                font-size: 1.1rem;  /* 調整字體大小，適合內容 */
+                text-align: center; /* 列表項目文字置中 */
+                color: #adb5bd;     /* 默認文字顏色為灰色 */
+            }
+
+            /* Sidebar 列表項目樣式 */
+            .sidebar .nav-item {
+                margin-bottom: 10px; /* 調整間距 */
+            }
+
+            /* Sidebar 列表鏈接樣式 */
+            .sidebar .nav-link {
+                color: #adb5bd; /* 默認為灰色文字 */
+                font-size: 1rem; /* 字體大小 */
+                padding: 10px 15px; /* 調整內邊距 */
+                border-radius: 4px; /* 添加圓角 */
+                transition: background-color 0.3s ease, color 0.3s ease;
+                text-align: center; /* 保持文字置中 */
+                text-decoration: none; /* 去掉下劃線 */
+            }
+
+            /* Hover 效果 */
+            .sidebar .nav-link:hover {
+                background-color: #007bff; /* Hover 時背景顏色 */
+                color: #fff; /* Hover 時文字顏色 */
+            }
+
+            /* Active 狀態 */
+            .sidebar .nav-link.active {
+                background-color: #007bff; /* 當前頁面背景顏色 */
+                color: #fff; /* 當前頁面文字顏色 */
+            }
+
+            /* 調整內容區域的左邊距 */
+            body {
+                margin-left: 200px; /* 與 sidebar 寬度一致 */
+                transition: margin-left 0.3s ease; /* 平滑過渡效果 */
+                background-color: #f8f9fa; /* 主內容背景色 */
+                font-family: 'Arial', sans-serif; /* 字體設置 */
+            }
+        </style>
+    </head>
+    <body>
+        <nav class="navbar navbar-expand-lg navbar-light sidebar" id="mainNav">
+            <a class="navbar-brand mb-4 w-100" href="admin.html">後台管理系統</a>
+            <ul class="navbar-nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link py-2" href="admin.html">旅客資料</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link py-2" href="trip.html">設定行程</a>
+                </li>
+            </ul>
+        </nav>
+        
+            
+
+        <div class="container">
+            <h1>旅客資料修改</h1>
+
+            <!-- 使用 Flexbox 實現左右佈局 -->
+            <div class="form-row" style="display: flex; justify-content: space-between;">
+                
+                <!-- 左邊：身分證號 -->
+                <div class="form-group" style="flex: 1; margin-right: 20px;">
+                    <label for="personalNumber">身分證字號：</label>
+                    <input type="text" id="personalNumber" class="form-control" placeholder="A123456789" oninput="suggestNumber()">
+                    <ul id="suggestions" class="list-group" style="display: none; position: absolute; z-index: 100;"></ul>
+                </div>
+
+                <!-- 右邊：護照號碼 -->
+                <div class="form-group" style="flex: 1; margin-left: 20px;">
+                    <label for="passportNumber">護照號碼：</label>
+                    <input type="text" id="passportNumber" class="form-control" placeholder="12345678" oninput="suggestNumber()">
+                    <ul id="suggestions_passport" class="list-group" style="display: none; position: absolute; z-index: 100;"></ul>
+                </div>
+
+            </div>
+        
+            <div class="form-group">
+                <button class="btn btn-primary" onclick="searchUser()">查詢</button>
+            </div>
+        
+            <!-- 顯示查詢結果 -->
+            <div id="result" class="alert alert-info" style="display: none;"></div>
+        
+            <!-- 匯出 CSV -->
+            <div class="form-group">
+                <a href="/export_csv" class="btn btn-success">匯出所有旅客的資料</a>
+            </div>
+        </div>
+        
+        
+        <script>
+            // 自動補全邏輯
+            function suggestNumber() {
+                const input = document.getElementById("personalNumber").value;
+                const input_passport = document.getElementById("passportNumber").value;
+                const suggestionsList = document.getElementById("suggestions");
+                const suggestionsPassportList = document.getElementById("suggestions_passport");
+                
+                if (!input && !input_passport) {
+                    suggestionsList.style.display = "none";
+                    suggestionsPassportList.style.display = "none";
+                    return;
+                }
+
+                // 根據身分證號查詢，發送請求
+                fetch(`/suggest?query=${input}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.length > 0) {
+                            suggestionsList.style.display = "block";
+                            suggestionsList.innerHTML = data
+                                .map(user => `
+                                    <li class="list-group-item" onclick='selected(${JSON.stringify(user)})'>
+                                        ${user.personal_number} - ${user.name} ${user.surname}
+                                    </li>`)
+                                .join("");
+                        } else {
+                            suggestionsList.style.display = "none";
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error fetching suggestions:", error);
+                    });
+                
+                // 根據護照號碼查詢，發送請求
+                fetch(`/suggest_passport?query=${input_passport}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.length > 0) {
+                            suggestionsPassportList.style.display = "block";
+                            suggestionsPassportList.innerHTML = data
+                                .map(user => `
+                                    <li class="list-group-item" onclick='selected(${JSON.stringify(user)})'>
+                                        ${user.passport_number} - ${user.name} ${user.surname}
+                                    </li>`)
+                                .join("");
+                        } else {
+                            suggestionsPassportList.style.display = "none";
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error fetching suggestions:", error);
+                    });
+            }
+            // 選擇建議的旅客
+            function selected(user) {
+                console.log(user);
+                document.getElementById("personalNumber").value = user.personal_number;  // 確保正確引用 personal_number
+                document.getElementById("passportNumber").value = user.passport_number;  // 確保正確引用 passport_number
+                document.getElementById("suggestions").style.display = "none";
+                document.getElementById("suggestions_passport").style.display = "none";
+            }
+
+            // 查詢用戶
+            function searchUser() {
+                const personalNumber = document.getElementById("personalNumber").value;
+                const passportNumber = document.getElementById("passportNumber").value;
+
+                if (!personalNumber && !passportNumber) {
+                    alert("請至少輸入身分證號或護照號碼！");
+                    return;
+                }
+
+                // 根據輸入的身分證號或護照號碼查詢
+                fetch(`/search?personal_number=${personalNumber}&passport_number=${passportNumber}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const resultDiv = document.getElementById("result");
+
+                        if (data.error) {
+                            resultDiv.style.display = "none";
+                            alert(data.error);
+                        } else {
+                            resultDiv.innerHTML = `
+                                <strong>名字:</strong> <input type="text" id="nameField" value="${data.name}" /><br>
+                                <strong>姓氏:</strong> <input type="text" id="surnameField" value="${data.surname}" /><br>
+                                <strong>性別:</strong> <input type="text" id="sexField" value="${data.sex}" /><br>
+                                <strong>出生日期:</strong> <input type="text" id="dobField" value="${data.date_of_birth}" /><br>
+                                <strong>國籍:</strong> <input type="text" id="nationalityField" value="${data.nationality}" /><br>
+                                <strong>護照類型:</strong> <input type="text" id="passportTypeField" value="${data.passport_type}" /><br>
+                                <strong>護照號碼:</strong> <input type="text" id="passport_numberField" value="${data.passport_number}" /><br>
+                                <strong>發證國:</strong> <input type="text" id="issuing_countryField" value="${data.issuing_country}" /><br>
+                                <strong>有效期限:</strong> <input type="text" id="expiration_dateField" value="${data.expiration_date}" /><br>
+                                <strong>身分證號:</strong> <input type="text" id="personal_numberField" value="${data.personal_number}" /><br>
+                                <button onclick="saveChanges()">儲存更改</button>
+                            `;
+                            resultDiv.style.display = "block";
+                        }
+                    })
+                    .catch(error => {
+                        alert("查詢時發生錯誤！請稍後再試。");
+                    });
+            }
+
+            function saveChanges() {
+                const name = document.getElementById('nameField').value;
+                const surname = document.getElementById('surnameField').value;
+                const sex = document.getElementById('sexField').value;
+                const dob = document.getElementById('dobField').value;
+                const nationality = document.getElementById('nationalityField').value;
+                const passportType = document.getElementById('passportTypeField').value;
+                const passport_number = document.getElementById('passport_numberField').value;
+                const issuing_country = document.getElementById('issuing_countryField').value;
+                const expiration_date = document.getElementById('expiration_dateField').value;
+                const personal_number = document.getElementById('personal_numberField').value;
+
+                // 將修改後的資料傳回伺服器
+                const updatedData = {
+                    name,
+                    surname,
+                    sex,
+                    date_of_birth : dob,
+                    nationality,
+                    passport_type : passportType,
+                    passport_number,
+                    issuing_country,
+                    expiration_date,
+                    personal_number,
+                };
+
+                fetch('/submit_passport', { // 替換為您的提交 API
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(updatedData),
+                })
+                .then((response) => response.json())
+                .then((result) => {
+                    if (result.success) {
+                        alert('資料提交成功！');
+                    } else {
+                        console.error('Error:', result.error);
+                        alert('提交失敗，請重試！', result.error);
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    alert('伺服器錯誤，請稍後再試。');
+                });
+            }
+
+        </script>
+        
+    
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    </body>
+    </html>
