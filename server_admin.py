@@ -122,6 +122,7 @@ def suggest_trip():
     try:
         df = pd.read_csv(TRIP_FILE_PATH)
         df = df.fillna("NaN")
+
     except Exception as e:
         return jsonify({"error": f"Error reading the CSV file: {e}"}), 500
 
@@ -295,6 +296,41 @@ def get_traveler():
         }), 200
     except IndexError:
         return jsonify({"error": "No traveler found"}), 404
+
+@app_admin.route("/export_trip/<trip_name>", methods=["GET"])
+def export_trip(trip_name):
+    try:
+        # 讀取行程資料
+        trips_df = pd.read_csv(TRIP_FILE_PATH)
+        trip = trips_df[trips_df["name"] == trip_name]
+
+        if trip.empty:
+            return jsonify({"error": "Trip not found"}), 404
+
+        # 獲取參與者的身分證號
+        participants = trip.iloc[0]["participants"].split(";")
+
+        # 讀取旅客資料
+        travelers_df = pd.read_csv(EXCEL_FILE_PATH)
+
+        # 篩選出參與者的完整資料
+        exported_travelers = travelers_df[travelers_df["personal_number"].isin(participants)][
+            ["name", "sex", "personal_number", "passport_number"]
+        ]
+
+        # 設置檔案名稱
+        csv_filename = f"{trip_name}.csv"
+
+        # 將資料寫入 BytesIO 物件（記憶體中的檔案）
+        output = BytesIO()
+        exported_travelers.to_csv(output, index=False, encoding="utf-8")
+        output.seek(0)  # 重置檔案指標
+
+        # 返回 CSV 文件
+        return send_file(output, as_attachment=True, download_name=csv_filename, mimetype="text/csv")
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 

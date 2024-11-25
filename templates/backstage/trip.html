@@ -94,7 +94,6 @@
                 border: 1px solid #ccc; /* 添加邊框 */
                 box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 陰影效果 */
             }
-
         </style>
     </head>
     <body>
@@ -111,56 +110,78 @@
         </nav>   
 
         <div class="container">
-            <h1>行程設定</h1>
-            <h3>選擇行程</h3>
-            <div class="form-group" style="flex: 1; display: flex; align-items: center; margin-right: 20px;">
-                <input type="text" id="trip" class="form-control" placeholder="輸入行程關鍵字" oninput="suggestTrip()">
-                <button id="confirmBtn" class="btn btn-primary" onclick="confirmTrip()" style="margin-left: 10px;">確定</button>
-                <ul id="suggestions_trip" class="list-group" style="display: none; position: absolute; z-index: 100;"></ul>
-            </div>
-            
-            <div id="tripDetails" style="display: none;">
-                <h4>行程詳細資料</h4>
-                <div class="form-group">
-                    <label for="destination">目的地:</label>
-                    <input type="text" id="destination" class="form-control">
-                </div>
-                <div class="form-group">
-                    <label for="startDate">開始時間:</label>
-                    <input type="datetime-local" id="startDate" class="form-control">
-                </div>
-                <!-- 顯示已選擇的旅客 -->
-                <h4>已選擇的旅客</h4>
-                <div id="selectedTravelers">
-                    <!-- 顯示查詢結果 -->
-                    <div id="result" class="alert alert-info" style="display: none;"></div>
-                    <!-- 這裡會顯示所有旅客 -->
-                </div>
-                <h3>加入旅客</h3>
-                <div class="form-group" style="display: flex; justify-content: space-between;">
-                    <div style="flex: 1;">
-                        <label for="personalNumber">身分證號：</label>
-                        <input type="text" id="personalNumber" class="form-control" placeholder="請輸入身分證號" oninput="suggestNumber()">
-                        <ul id="suggestions" class="list-group" style="display: none; position: absolute; z-index: 100;"></ul>
+            <h1 class="mb-4">行程管理系統</h1>
+        
+            <!-- 行程選擇區 -->
+            <section class="mb-4">
+                <h3>選擇或新增行程</h3>
+                <div class="form-group position-relative">
+                    <div class="d-flex align-items-center">
+                        <input type="text" id="trip" class="form-control" placeholder="輸入行程名稱或關鍵字" oninput="suggestTrip()">
+                        <button id="confirmBtn" class="btn btn-primary ms-2" onclick="confirmTrip()" style="width: 5rem;">確定</button>
                     </div>
-                    <div style="flex: 1; margin-left: 20px;">
-                        <label for="passportNumber">護照號碼：</label>
-                        <input type="text" id="passportNumber" class="form-control" placeholder="請輸入護照號碼" oninput="suggestNumber()">
-                        <ul id="suggestions_passport" class="list-group" style="display: none; position: absolute; z-index: 100;"></ul>
+                    <ul id="suggestions_trip" class="list-group position-absolute w-100" style="display: none; z-index: 100; top: 100%;"></ul>
+                </div>
+            </section>
+        
+            <!-- 行程詳細資料區 -->
+            <section id="tripDetails" style="display: none;" class="mb-4">
+                <h3>行程詳細資料</h3>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="destination" class="form-label">目的地</label>
+                        <input type="text" id="destination" class="form-control">
                     </div>
-                    <div style="flex: 1; margin-left: 20px;">
-                        <button onclick="addTraveler()" class="btn btn-success">加入旅客</button>
+                    <div class="col-md-6">
+                        <label for="startDate" class="form-label">開始日期</label>
+                        <input type="date" id="startDate" class="form-control">
                     </div>
                 </div>
-
-                <button onclick="saveOrUpdateTrip()" class="btn btn-success">創建/修改行程</button>
-
-                <!-- 匯出 CSV -->
-                <div class="form-group">
-                    <a href="/export_csv" class="btn btn-success">匯出此行程</a>
-                </div>
-            </div>
+                <!-- 旅客管理區 -->
+                <section class="mb-4">
+                    <div class="card border-info">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">旅客管理</h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- 已選擇的旅客 -->
+                            <div class="mb-3">
+                                <label>參與此行程的旅客</label>
+                                <div id="selectedTravelers" class="border p-3" style="background-color: #f8f9fa;">
+                                    <!-- 動態渲染的旅客列表 -->
+                                </div>
+                            </div>
+                
+                            <!-- 新增旅客 -->
+                            <div class="row align-items-end">
+                                <div class="col-md-4">
+                                    <label for="personalNumber" class="form-label">身分證</label>
+                                    <input type="text" id="personalNumber" class="form-control" placeholder="A12345678" oninput="suggestNumber()">
+                                    <ul id="suggestions" class="list-group position-absolute mt-1" style="display: none; z-index: 100;"></ul>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="passportNumber" class="form-label">護照號碼</label>
+                                    <input type="text" id="passportNumber" class="form-control" placeholder="123456789" oninput="suggestNumber()">
+                                    <ul id="suggestions_passport" class="list-group position-absolute mt-1" style="display: none; z-index: 100;"></ul>
+                                </div>
+                                <div class="col-md-4">
+                                    <button onclick="addTraveler()" class="btn btn-secondary w-100">加入旅客</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- 操作按鈕區 -->
+                <section class="d-flex justify-content-end gap-2">
+                    <button onclick="saveOrUpdateTrip()" class="btn btn-primary">創建/修改行程</button>
+                    <button onclick="exportTrip()" class="btn btn-success">匯出行程</button>
+                </section>
+            </section>
+        
+        
         </div>
+        
         
         
         <script>
@@ -232,7 +253,6 @@
                     })
                     .then(response => response.json())
                     .then(data => {
-                        console.log(data);
                         suggestionsList.style.display = "block";
                         suggestionsList.innerHTML = data.map(trip => `
                             <li class="list-group-item" onclick='selectTrip(${JSON.stringify(trip)})'>
@@ -260,7 +280,7 @@
                 document.getElementById("trip").value = data.name;
                 document.getElementById("suggestions_trip").style.display = "none";
                 document.getElementById("destination").value = data.destination;
-                document.getElementById("startDate").value = data.start_date;
+                document.getElementById("startDate").value = data.startDate;
 
                 // 清空 selectedTravelers
                 selectedTravelers = [];
@@ -273,7 +293,7 @@
                     return getTravelerdata(participant)  // 這裡返回的是 Promise
                         .then(traveler => {
                             selectedTravelers.push(traveler);  // 將獲取到的旅客資料推入 selectedTravelers
-                            console.log(traveler);
+                            // console.log(traveler);
                         })
                         .catch(error => {
                             console.error("Error:", error);
@@ -292,13 +312,16 @@
             function confirmTrip() {
                 const tripName = document.getElementById("trip").value;
                 
-                fetch(`/suggest_trip?name=${tripName}`, {
+                fetch(`/suggest_trip?query=${tripName}`, {
                     method: 'GET'
                 })
                 .then(response => response.json())
                 .then(data => {
+                    console.log(data[0]);
                     if (data && data.length > 0) {
-                        alert(`您選擇的行程是: ${data[0].name}`);
+                        selectTrip(data[0]);
+                        document.getElementById("tripDetails").style.display = "block";
+                        document.getElementById("suggestions_trip").style.display = "none";
                     } else {
                         document.getElementById("tripDetails").style.display = "block";
                     }
@@ -312,7 +335,7 @@
                     const travelerId = checkbox.id.split('-')[1]; // 從 checkbox 的 ID 提取索引
                     return selectedTravelers[travelerId]; // 從 selectedTravelers 中直接獲取資料
                 });
-                console.log(participants);
+                // console.log(participants);
 
                 const newTrip = {
                     name: document.getElementById("trip").value,
@@ -320,7 +343,7 @@
                     startDate: document.getElementById("startDate").value,
                     participants
                 };
-
+                    
                 fetch("/add_trip", {
                     method: "POST",
                     headers: {
@@ -360,7 +383,6 @@
                     })
                     .catch(error => {
                         console.error("Error fetching traveler data:", error);
-                        alert("無法獲取旅客資料，請稍後再試！");
                     });
             }
 
@@ -387,7 +409,7 @@
                         })
                         .catch(error => {
                             console.error("Error fetching traveler data:", error);
-                            alert("無法獲取旅客資料，請稍後再試！");
+                            alert("無法獲取旅客資料！可能沒有此旅客");
                             reject(error);  // 如果有錯誤，拒絕 Promise
                         });
                 });
@@ -405,16 +427,39 @@
 
             // 渲染已選擇的旅客
             function renderSelectedTravelers() {
+                // 根據名字對 selectedTravelers 進行排序
+                selectedTravelers.sort((a, b) => {
+                    const nameA = a.name.toUpperCase(); // 轉為大寫進行字母排序
+                    const nameB = b.name.toUpperCase(); // 轉為大寫進行字母排序
+                    if (nameA < nameB) return -1;
+                    if (nameA > nameB) return 1;
+                    return 0; // 名字相同時不變
+                });
                 console.log(selectedTravelers);
                 const selectedTravelersDiv = document.getElementById("selectedTravelers");
                 selectedTravelersDiv.innerHTML = selectedTravelers.map((traveler, index) => `
-                    <div class="form-row">
-                        <input type="checkbox" id="traveler-${index}" checked>
-                        <span>${traveler.name} ${traveler.surname} /身分證字號:${traveler.personalNumber}</span>
-                        <button onclick="removeTraveler(${index})">刪除</button>
+                    <div class="form-row d-flex align-items-center justify-content-between">
+                        <div>
+                            <input type="checkbox" id="traveler-${index}" checked>
+                            <span>${traveler.name} ${traveler.surname} /身分證字號:${traveler.personalNumber}</span>
+                        </div>
+                        <button onclick="removeTraveler(${index})" class="btn btn-warning ms-2" style="width: 5rem;">刪除</button>
                     </div>
                 `).join("");
             }
+
+            function exportTrip() {
+                const tripName = document.getElementById("trip").value.trim();
+
+                if (!tripName) {
+                    alert("請先選擇行程名稱！");
+                    return;
+                }
+
+                // 發送請求到後端
+                window.location.href = `/export_trip/${encodeURIComponent(tripName)}`;
+            }
+
         </script>
         
     

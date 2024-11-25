@@ -106,27 +106,22 @@
             <h1>旅客資料修改</h1>
 
             <!-- 使用 Flexbox 實現左右佈局 -->
-            <div class="form-row" style="display: flex; justify-content: space-between;">
-                
-                <!-- 左邊：身分證號 -->
-                <div class="form-group" style="flex: 1; margin-right: 20px;">
-                    <label for="personalNumber">身分證字號：</label>
-                    <input type="text" id="personalNumber" class="form-control" placeholder="A123456789" oninput="suggestNumber()">
-                    <ul id="suggestions" class="list-group" style="display: none; position: absolute; z-index: 100;"></ul>
+            <div class="row align-items-end">
+                <div class="col-md-4">
+                    <label for="personalNumber" class="form-label">身分證</label>
+                    <input type="text" id="personalNumber" class="form-control" placeholder="A12345678" oninput="suggestNumber()">
+                    <ul id="suggestions" class="list-group position-absolute mt-1" style="display: none; z-index: 100;"></ul>
                 </div>
-
-                <!-- 右邊：護照號碼 -->
-                <div class="form-group" style="flex: 1; margin-left: 20px;">
-                    <label for="passportNumber">護照號碼：</label>
-                    <input type="text" id="passportNumber" class="form-control" placeholder="12345678" oninput="suggestNumber()">
-                    <ul id="suggestions_passport" class="list-group" style="display: none; position: absolute; z-index: 100;"></ul>
+                <div class="col-md-4">
+                    <label for="passportNumber" class="form-label">護照號碼</label>
+                    <input type="text" id="passportNumber" class="form-control" placeholder="123456789" oninput="suggestNumber()">
+                    <ul id="suggestions_passport" class="list-group position-absolute mt-1" style="display: none; z-index: 100;"></ul>
                 </div>
-
+                <div class="col-md-4">
+                    <button class="btn btn-primary w-100" onclick="searchUser()">查詢</button>
+                </div>
             </div>
         
-            <div class="form-group">
-                <button class="btn btn-primary" onclick="searchUser()">查詢</button>
-            </div>
         
             <!-- 顯示查詢結果 -->
             <div id="result" class="alert alert-info" style="display: none;"></div>
