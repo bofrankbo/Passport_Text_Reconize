@@ -20,50 +20,52 @@
                 height: 100vh; /* 畫面高度 */
                 width: 200px; /* 側邊欄寬度 */
                 position: fixed; /* 固定在左側 */
+                text-align: center; /* 文字置中 */
                 top: 0;
                 left: 0;
                 background-color: #343a40; /* 更換為深色背景 */
                 box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* 添加陰影 */
                 display: flex;
                 flex-direction: column;
-                padding-top: 20px;
+                padding-top: 10px;
                 z-index: 1030; /* 確保高於其他元素 */
             }
 
             /* Navbar Brand 樣式 */
-            .sidebar .navbar-brand {
-                text-align: center; /* 文字置中 */
-                display: block;     /* 確保文字寬度占滿父容器 */
-                font-size: 1.5rem;  /* 增加字體大小 */
-                font-weight: bold;  /* 設置字體加粗 */
-                color: #fff;        /* 更換為白色文字 */
-                margin-bottom: 30px; /* 增加與下面內容的距離 */
-                margin-left: 0;     /* 移除不必要的左邊距 */
-            }
-
+            
             /* Sidebar 列表樣式 */
             .sidebar .navbar-nav {
                 flex-grow: 1; /* 填滿空間 */
                 padding-left: 0;
-                font-size: 1.1rem;  /* 調整字體大小，適合內容 */
                 text-align: center; /* 列表項目文字置中 */
                 color: #adb5bd;     /* 默認文字顏色為灰色 */
             }
-
+            
             /* Sidebar 列表項目樣式 */
             .sidebar .nav-item {
-                margin-bottom: 10px; /* 調整間距 */
+                align-items: center; /* 垂直置中 */
+                margin-bottom: 0px; /* 項目之間的間距 */
+                padding: 5px 10px; /*縮小上下和左右內邊距 */
             }
-
-            /* Sidebar 列表鏈接樣式 */
+            
+            .sidebar .navbar-brand {
+                display: block; /* 確保 <a> 變成塊級元素，寬度填滿父容器 */
+                text-align: left; /* 讓文字在塊內水平置中 */
+                font-size: 1.1rem; /* 可選：調整字體大小 */
+                font-weight: bold; /* 可選：加粗字體 */
+                color: #fff;        /* 更換為白色文字 */
+                padding: 5px 10px; /*縮小上下和左右內邊距 */
+            }
+            
+            /* Sidebar 列表連結樣式 */
             .sidebar .nav-link {
                 color: #adb5bd; /* 默認為灰色文字 */
                 font-size: 1rem; /* 字體大小 */
-                padding: 10px 15px; /* 調整內邊距 */
                 border-radius: 4px; /* 添加圓角 */
                 transition: background-color 0.3s ease, color 0.3s ease;
-                text-align: center; /* 保持文字置中 */
+                text-align: left; /* 保持文字置中 */
                 text-decoration: none; /* 去掉下劃線 */
+                padding: 5px 10px; /*縮小上下和左右內邊距 */
             }
 
             /* Hover 效果 */
@@ -88,9 +90,12 @@
         </style>
     </head>
     <body>
-        <nav class="navbar navbar-expand-lg navbar-light sidebar" id="mainNav">
-            <a class="navbar-brand mb-4 w-100" href="admin.html">後台管理系統</a>
+        <nav class="sidebar" id="mainNav">
+            
             <ul class="navbar-nav flex-column">
+                <li class="nav-item">
+                    <a class="navbar-brand" href="admin.html">後台管理系統</a>
+                </li>
                 <li class="nav-item">
                     <a class="nav-link py-2" href="admin.html">旅客資料</a>
                 </li>
@@ -103,52 +108,55 @@
             
 
         <div class="container">
-            <h1>旅客資料修改</h1>
+            <h1>客戶資料修改</h1>
 
             <!-- 使用 Flexbox 實現左右佈局 -->
+            <!-- 新增旅客 -->
             <div class="row align-items-end">
-                <div class="col-md-4">
-                    <label for="personalNumber" class="form-label">身分證</label>
-                    <input type="text" id="personalNumber" class="form-control" placeholder="A12345678" oninput="suggestNumber()">
+                <div class="row-md-4">
+                    <label for="suggest" class="form-label">查詢身分證或護照號碼</label>
+                    <input type="text" id="suggest" class="form-control" placeholder="A12345678" oninput="suggestNumber()">
                     <ul id="suggestions" class="list-group position-absolute mt-1" style="display: none; z-index: 100;"></ul>
                 </div>
                 <div class="col-md-4">
-                    <label for="passportNumber" class="form-label">護照號碼</label>
-                    <input type="text" id="passportNumber" class="form-control" placeholder="123456789" oninput="suggestNumber()">
-                    <ul id="suggestions_passport" class="list-group position-absolute mt-1" style="display: none; z-index: 100;"></ul>
+                    <label for="personalNumber" class="form-label">身分證字號</label>
+                    <div id="personalNumber" class="form-control bg-light text-dark" style="height: 38px; min-width: 200px; text-align: left;"> </div>
                 </div>
                 <div class="col-md-4">
-                    <button class="btn btn-primary w-100" onclick="searchUser()">查詢</button>
+                    <label for="passportNumber" class="form-label">護照號碼</label>
+                    <div id="passportNumber" class="form-control bg-light text-dark" style="height: 38px; min-width: 200px; text-align: left;"> </div>
+                </div>                  
+                <div class="col-md-4">
+                    <button onclick="searchUser()" class="btn btn-secondary w-100">查詢客戶</button>
+                </div>
+                
+                <!-- 顯示查詢結果 -->
+                <div class="md-4">
+                    <div id="result" class="alert alert-info" style="display: none;"></div>
+                </div>
+            
+                <!-- 匯出 CSV -->
+                <div class="mt-3 text-end">
+                    <a href="/export_csv" class="btn btn-success">匯出所有旅客的資料</a>
                 </div>
             </div>
         
-        
-            <!-- 顯示查詢結果 -->
-            <div id="result" class="alert alert-info" style="display: none;"></div>
-        
-            <!-- 匯出 CSV -->
-            <div class="form-group">
-                <a href="/export_csv" class="btn btn-success">匯出所有旅客的資料</a>
-            </div>
         </div>
         
         
         <script>
-            // 自動補全邏輯
+            // 自動推薦系統
             function suggestNumber() {
-                const input = document.getElementById("personalNumber").value;
-                const input_passport = document.getElementById("passportNumber").value;
+                const input = document.getElementById("suggest").value;
                 const suggestionsList = document.getElementById("suggestions");
-                const suggestionsPassportList = document.getElementById("suggestions_passport");
                 
                 if (!input && !input_passport) {
                     suggestionsList.style.display = "none";
-                    suggestionsPassportList.style.display = "none";
                     return;
                 }
 
-                // 根據身分證號查詢，發送請求
-                fetch(`/suggest?query=${input}`)
+                // 根據身分證或護照建議旅客
+                fetch(`/suggest_id?query=${input}`)
                     .then(response => response.json())
                     .then(data => {
                         if (data.length > 0) {
@@ -156,7 +164,7 @@
                             suggestionsList.innerHTML = data
                                 .map(user => `
                                     <li class="list-group-item" onclick='selected(${JSON.stringify(user)})'>
-                                        ${user.personal_number} - ${user.name} ${user.surname}
+                                        ${user.personal_number} / ${user.passport_number} - ${user.name} ${user.surname}
                                     </li>`)
                                 .join("");
                         } else {
@@ -166,40 +174,20 @@
                     .catch(error => {
                         console.error("Error fetching suggestions:", error);
                     });
-                
-                // 根據護照號碼查詢，發送請求
-                fetch(`/suggest_passport?query=${input_passport}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.length > 0) {
-                            suggestionsPassportList.style.display = "block";
-                            suggestionsPassportList.innerHTML = data
-                                .map(user => `
-                                    <li class="list-group-item" onclick='selected(${JSON.stringify(user)})'>
-                                        ${user.passport_number} - ${user.name} ${user.surname}
-                                    </li>`)
-                                .join("");
-                        } else {
-                            suggestionsPassportList.style.display = "none";
-                        }
-                    })
-                    .catch(error => {
-                        console.error("Error fetching suggestions:", error);
-                    });
             }
+
+            // selected -------------------------------------
             // 選擇建議的旅客
             function selected(user) {
-                console.log(user);
-                document.getElementById("personalNumber").value = user.personal_number;  // 確保正確引用 personal_number
-                document.getElementById("passportNumber").value = user.passport_number;  // 確保正確引用 passport_number
+                traveler = user;
+                document.getElementById("personalNumber").textContent = user.personal_number;
+                document.getElementById("passportNumber").textContent = user.passport_number;
                 document.getElementById("suggestions").style.display = "none";
-                document.getElementById("suggestions_passport").style.display = "none";
             }
 
             // 查詢用戶
             function searchUser() {
-                const personalNumber = document.getElementById("personalNumber").value;
-                const passportNumber = document.getElementById("passportNumber").value;
+                const personalNumber = document.getElementById("personalNumber").textContent.trim();
 
                 if (!personalNumber && !passportNumber) {
                     alert("請至少輸入身分證號或護照號碼！");
@@ -207,7 +195,7 @@
                 }
 
                 // 根據輸入的身分證號或護照號碼查詢
-                fetch(`/search?personal_number=${personalNumber}&passport_number=${passportNumber}`)
+                fetch(`/get_client?personal_number=${personalNumber}`)
                     .then(response => response.json())
                     .then(data => {
                         const resultDiv = document.getElementById("result");
