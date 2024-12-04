@@ -33,7 +33,7 @@
                 </button>
                 <div class="collapse navbar-collapse" id="navbarResponsive">
                     <ul class="navbar-nav ms-auto py-4 py-lg-0">
-                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="index.html">Home</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="index.html">護照辨識</a></li>
                         <!-- <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="about.html">About</a></li>
                         <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="crawl.html">Crawl</a></li>
                         <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="model.html">Model</a></li>
@@ -58,71 +58,96 @@
         </header>
 
         <!-- Main Content-->
-        <div class="container px-4 px-lg-5">
-            <div class="row gx-4 gx-lg-5 justify-content-center">
-                <div class="col-md-10 col-lg-8 col-xl-7">
-                    <!-- Camera Section -->
-                    <div class="camera-container">
-                        <h2>請選擇檔案或拍攝護照</h2>
-                        <!-- <video id="camera" autoplay playsinline style="width: 100%; height: auto; border: 1px solid #ccc;"></video> -->
-                        <input type="file" id="imageInput" accept="image/*" class="form-control mt-3">
-                        <button id="captureButton" class="btn btn-primary mt-3">辨識</button>
-                        <text id="scanning" style="display: none;">正在辨識中 </text>
-                    </div>
-
-                    <!-- OCR Result Section -->
-
-                    <div id="resultContainer" class="mt-4">
-                        <h5>辨識結果：</h5>
-                        <form id="resultForm">
-                            <div class="form-group">
-                                <label for="nameField">名：</label>
-                                <input type="text" id="nameField" class="form-control" value="" />
-                            </div>
-                            <div class="form-group mt-3">
-                                <label for="surnameField">姓：</label>
-                                <input type="text" id="surnameField" class="form-control" value="" />
-                            </div>
-                            <div class="form-group mt-3">
-                                <label for="sexField">性別：</label>
-                                <input type="text" id="sexField" class="form-control" value="" />
-                            </div>
-                            <div class="form-group mt-3">
-                                <label for="dobField">出生日期：</label>
-                                <input type="text" id="dobField" class="form-control" value="" />
-                            </div>
-                            <div class="form-group mt-3">
-                                <label for="nationalityField">國籍：</label>
-                                <input type="text" id="nationalityField" class="form-control" value="" />
-                            </div>
-                            <div class="form-group mt-3">
-                                <label for="passportTypeField">護照類型：</label>
-                                <input type="text" id="passportTypeField" class="form-control" value="" />
-                            </div>
-                            <div class="form-groupmt-3">
-                                <label for="passport_numberField">護照號碼：</label>
-                                <input type="text" id="passport_numberField" class="form-control" value="" />
-                            </div>
-                            <div class="form-group mt-3">
-                                <label for="issuing_countryField">發行國：</label>
-                                <input type="text" id="issuing_countryField" class="form-control" value="" />
-                            </div>
-                            <div class="form-group mt-3">
-                                <label for="expiration_dateField">到期日：</label>
-                                <input type="text" id="expiration_dateField" class="form-control" value="" />
-                            </div>
-                            <div class="form-group mt-3">
-                                <label for="personal_numberField">身分證：</label>
-                                <input type="text" id="personal_numberField" class="form-control" value="" />
-                            </div>
+        <main>
+            <div class="container px-4 px-lg-5">
+                <div class="row gx-4 gx-lg-5 justify-content-center">
+                    <div class="col-md-10 col-lg-8 col-xl-7">
+                        <!-- Camera Section -->
+                        <div class="camera-container mt-4 d-flex flex-column align-items-center">
+                            <h2>請選擇檔案或拍攝護照</h2>
+                            <input type="file" id="imageInput" accept="image/*" class="form-control mb-3">
+                            <button id="captureButton" class="btn btn-primary mb-3">辨識</button>
+                            <text id="scanning" class="text-center" style="display: none;">正在辨識中</text>
+                        </div>
                             
-                        </form>
-                        <button id="confirmButton" class="btn btn-success mt-3">確認並提交</button>
+
+                        <!-- OCR Result Section -->
+
+                        <div id="resultContainer" class="mt-4">
+                            <h5>辨識結果：</h5>
+                            <form id="resultForm">
+
+                                <div class="form-group mt-3">
+                                    <!-- 第一行：中文名字與中文姓氏 -->
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label for="nameField">中文名字：</label>
+                                            <input type="text" id="nameField" class="form-control" value="" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="surnameField">中文姓氏：</label>
+                                            <input type="text" id="surnameField" class="form-control" value="" />
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 第二行：英文名字與英文姓氏 -->
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label for="englishNameField">護照英文名字：</label>
+                                            <input type="text" id="englishNameField" class="form-control" value="" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="englishSurnameField">護照英文姓氏：</label>
+                                            <input type="text" id="englishSurnameField" class="form-control" value="" />
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group mt-3">
+                                    <label for="personal_numberField">身分證字號：</label>
+                                    <input type="text" id="personal_numberField" class="form-control" value="" />
+                                </div>
+                                <div class="form-group mt-3">
+                                    <label for="sexField">性別：</label>
+                                    <select id="sexField" class="form-control">
+                                        <option value="M">男生 (M)</option>
+                                        <option value="F">女生 (F)</option>
+                                    </select>
+                                </div>                                
+                                <div class="form-group mt-3">
+                                    <label for="dobField">出生日期：</label>
+                                    <input type="text" id="dobField" class="form-control" value="" />
+                                </div>
+                                <div class="form-group mt-3">
+                                    <label for="nationalityField">國籍：</label>
+                                    <input type="text" id="nationalityField" class="form-control" value="" />
+                                </div>
+                                <div class="form-group mt-3">
+                                    <label for="passportTypeField">護照類型：</label>
+                                    <input type="text" id="passportTypeField" class="form-control" value="" />
+                                </div>
+                                <div class="form-groupmt-3">
+                                    <label for="passport_numberField">護照號碼：</label>
+                                    <input type="text" id="passport_numberField" class="form-control" value="" />
+                                </div>
+                                <div class="form-group mt-3">
+                                    <label for="issuing_countryField">護照發行國：</label>
+                                    <input type="text" id="issuing_countryField" class="form-control" value="" />
+                                </div>
+                                <div class="form-group mt-3">
+                                    <label for="expiration_dateField">護照到期日：</label>
+                                    <input type="text" id="expiration_dateField" class="form-control" value="" />
+                                </div>
+
+                                
+                            </form>
+                            <button id="confirmButton" class="btn btn-success mt-3">確認並提交</button>
+                        </div>
+                        
                     </div>
-                    
                 </div>
             </div>
-        </div>
+        </main>
 
         <!-- Footer-->
         <footer class="border-top">
