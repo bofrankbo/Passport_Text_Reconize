@@ -47,7 +47,7 @@ class OCRPassport:
         """
         try:
             date = parser.parse(string, yearfirst=True).date()
-            return date.strftime('%d/%m/%Y')
+            return date.strftime('%Y-%m-%d')
         except Exception as e:
             print(f"日期解析失敗: {e}")
             return "Invalid Date"

@@ -19,6 +19,75 @@
         rel="stylesheet" type="text/css" />
     <!-- Core theme CSS (includes Bootstrap)-->
     <link href="../static/css/styles.css" rel="stylesheet" />
+    <style>
+        #loadingOverlay {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        button {
+            border-radius: 8px; /* 圓角 */
+            font-size: 20px; /* 調整文字大小 */
+            color: #fff; /* 白色文字 */
+            border: 1px solid #ccc; /* 淺灰色邊框 */
+            cursor: pointer; /* 鼠標樣式 */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); /* 增加陰影 */
+            transition: all 0.3s ease-in-out; /* 增加過渡效果 */
+        }
+
+        button:hover {
+            box-shadow: 0 6px 4px rgba(0, 0, 0, 0.3); /* 提升陰影 */
+        }
+        input[type="text"],
+        input[type="date"],
+        input[type="file"],
+        select[type="sex"] {
+            width: 100%; /* 讓 input 填滿父容器 */
+            box-sizing: border-box; /* 確保內邊距和邊框包含在元素寬度內 */
+            border-radius: 8px; /* 圓角 */
+            border: 1px solid #ccc; /* 淺灰色邊框 */
+            padding: 8px;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1); /* 內陰影 */
+            transition: all 0.2s ease-in-out; /* 過渡效果 */
+            background-color: #f9f9f9; /* 背景顏色 */
+            display: block; /* 讓文件選擇按鈕填滿容器 */
+            cursor: pointer; /* 游標顯示為指針 */
+        }
+        /* 針對 input[type="file"] 提供額外樣式 */
+        input[type="file"] {
+            padding: 7px; /* 讓按鈕有內邊距 */
+            cursor: pointer; /* 游標顯示為指針 */
+            font-size: 16px; /* 調整字型大小 */
+            text-align: center; /* 按鈕內文字居中 */
+            display: block; /* 填滿父容器 */
+        }
+
+        input:focus,
+        select:focus {
+            outline: none; /* 去除外框 */
+            border-color: #8781fc; /* 聚焦時邊框顏色 */
+            box-shadow: 0 0 5px rgba(112, 105, 255, 0.5); /* 聚焦時發光效果 */
+        }
+
+        .maincontainer {
+            margin: 20px auto;
+            padding: 20px;
+            max-width: 1000px;
+            background: #f9f9f9; /* 淡灰色背景 */
+            border-radius: 15px; /* 容器圓角 */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* 淺陰影 */
+        }
+
+
+
+    </style>
 </head>
 
     <body>
@@ -49,8 +118,8 @@
                 <div class="row gx-4 gx-lg-5 justify-content-center">
                     <div class="col-md-10 col-lg-8 col-xl-7">
                         <div class="site-heading">
-                            <h1> 旅遊 </h1>
-                            <span class="subheading"> 上傳照片 </span>
+                            <h1>旅遊-護照資料</h1>
+                            <span class="subheading">護照資料上傳</span>
                         </div>
                     </div>
                 </div>
@@ -59,34 +128,46 @@
 
         <!-- Main Content-->
         <main>
-            <div class="container px-4 px-lg-5">
+            <div class="px-4 px-lg-5">
                 <div class="row gx-4 gx-lg-5 justify-content-center">
                     <div class="col-md-10 col-lg-8 col-xl-7">
                         <!-- Camera Section -->
-                        <div class="camera-container mt-4 d-flex flex-column align-items-center">
-                            <h2>請選擇檔案或拍攝護照</h2>
+                        <div class="maincontainer">
+                            <h2>1. 上傳護照照片</h2>
+                            <text>請選擇清晰的護照照片，大小在50MB以內</text>
                             <input type="file" id="imageInput" accept="image/*" class="form-control mb-3">
-                            <button id="captureButton" class="btn btn-primary mb-3">辨識</button>
-                            <text id="scanning" class="text-center" style="display: none;">正在辨識中</text>
+                            <div class="mt-3 text-end">
+                                <button id="captureButton" class="btn btn-success mb-3" st>辨識</button>
+                            </div>
+                            
                         </div>
+                        <div id="loadingOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 9999; display: flex; justify-content: center; align-items: center;">
+                            <div style="text-align: center; color: white;">
+                                <div class="spinner-border text-light" role="status" style="width: 3rem; height: 3rem;">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p style="margin-top: 10px;">正在辨識中，請稍候...</p>
+                            </div>
+                        </div>
+                        
                             
 
                         <!-- OCR Result Section -->
-
-                        <div id="resultContainer" class="mt-4">
-                            <h5>辨識結果：</h5>
+                        <div class="maincontainer">
+                            <h2>2. 確認辨識結果</h2>
+                            <text>確認資料是否正確，錯誤可以直接修正</text>
                             <form id="resultForm">
 
                                 <div class="form-group mt-3">
                                     <!-- 第一行：中文名字與中文姓氏 -->
                                     <div class="row mb-3">
                                         <div class="col-md-6">
-                                            <label for="nameField">中文名字：</label>
-                                            <input type="text" id="nameField" class="form-control" value="" />
+                                            <label for="nameField_ch">中文名字：</label>
+                                            <input type="text" id="nameField_ch" class="form-control" value="" />
                                         </div>
                                         <div class="col-md-6">
-                                            <label for="surnameField">中文姓氏：</label>
-                                            <input type="text" id="surnameField" class="form-control" value="" />
+                                            <label for="surnameField_ch">中文姓氏：</label>
+                                            <input type="text" id="surnameField_ch" class="form-control" value="" />
                                         </div>
                                     </div>
                                     
@@ -94,11 +175,11 @@
                                     <div class="row">
                                         <div class="col-md-6">
                                             <label for="englishNameField">護照英文名字：</label>
-                                            <input type="text" id="englishNameField" class="form-control" value="" />
+                                            <input type="text" id="nameField" class="form-control" value="" />
                                         </div>
                                         <div class="col-md-6">
                                             <label for="englishSurnameField">護照英文姓氏：</label>
-                                            <input type="text" id="englishSurnameField" class="form-control" value="" />
+                                            <input type="text" id="surnameField" class="form-control" value="" />
                                         </div>
                                     </div>
                                 </div>
@@ -109,15 +190,21 @@
                                 </div>
                                 <div class="form-group mt-3">
                                     <label for="sexField">性別：</label>
-                                    <select id="sexField" class="form-control">
+                                    <select type="sex" id="sexField" class="form-control">
                                         <option value="M">男生 (M)</option>
                                         <option value="F">女生 (F)</option>
+                                        <option value="X">其他 (X)</option>
                                     </select>
                                 </div>                                
                                 <div class="form-group mt-3">
                                     <label for="dobField">出生日期：</label>
-                                    <input type="text" id="dobField" class="form-control" value="" />
+                                    <input type="date" id="dobField" class="form-control" />
                                 </div>
+                                <div class="form-group mt-3">
+                                    <label for="expiration_dateField">護照到期日：</label>
+                                    <input type="date" id="expiration_dateField" class="form-control" />
+                                </div>
+                                
                                 <div class="form-group mt-3">
                                     <label for="nationalityField">國籍：</label>
                                     <input type="text" id="nationalityField" class="form-control" value="" />
@@ -126,7 +213,7 @@
                                     <label for="passportTypeField">護照類型：</label>
                                     <input type="text" id="passportTypeField" class="form-control" value="" />
                                 </div>
-                                <div class="form-groupmt-3">
+                                <div class="form-group mt-3">
                                     <label for="passport_numberField">護照號碼：</label>
                                     <input type="text" id="passport_numberField" class="form-control" value="" />
                                 </div>
@@ -134,14 +221,10 @@
                                     <label for="issuing_countryField">護照發行國：</label>
                                     <input type="text" id="issuing_countryField" class="form-control" value="" />
                                 </div>
-                                <div class="form-group mt-3">
-                                    <label for="expiration_dateField">護照到期日：</label>
-                                    <input type="text" id="expiration_dateField" class="form-control" value="" />
-                                </div>
-
-                                
                             </form>
-                            <button id="confirmButton" class="btn btn-success mt-3">確認並提交</button>
+                            <div class="mt-3 text-end">
+                                <button id="confirmButton" class="btn btn-success mt-3">確認並提交</button>
+                            </div>
                         </div>
                         
                     </div>
@@ -200,48 +283,50 @@
             const ocrResult = document.getElementById('ocrResult');
             const imageInput = document.getElementById('imageInput');
             const resultText = document.getElementById('resultText');
+            // document.getElementById('loadingOverlay').style.display = "block";
 
-            // 發送圖片到伺服器
-            document.getElementById('captureButton').addEventListener('click', () => {
-                const file = imageInput.files[0]; // 從 imageInput 中獲取檔案
-                if (file) {
-                    text_scan.style.display = "block"; // 顯示 "正在辨識中"
 
-                    const formData = new FormData();
-                    formData.append('image', file); // 將檔案附加到 FormData 中
+            // // 發送圖片到伺服器
+            // document.getElementById('captureButton').addEventListener('click', () => {
+            //     const file = imageInput.files[0]; // 從 imageInput 中獲取檔案
+            //     if (file) {
+            //         loadingOverlay.style.display = "block"; // 顯示 "正在辨識中"
 
-                    fetch('/process_passport', { // 替換成你的 API 路徑
-                        method: 'POST',
-                        body: formData, // 傳送 FormData
-                    })
-                    .then((response) => response.json())
-                    .then((data) => {
-                        text_scan.style.display = "none"; // 隱藏 "正在辨識中"
-                        if (data.success) {
-                            // 將辨識結果分別填入表單欄位
-                            document.getElementById('nameField').value = data.result.name;
-                            document.getElementById('surnameField').value = data.result.surname;
-                            document.getElementById('sexField').value = data.result.sex;
-                            document.getElementById('dobField').value = data.result.date_of_birth;
-                            document.getElementById('nationalityField').value = data.result.nationality;
-                            document.getElementById('passportTypeField').value = data.result.passport_type;
-                            document.getElementById('passport_numberField').value = data.result.passport_number;
-                            document.getElementById('issuing_countryField').value = data.result.issuing_country;
-                            document.getElementById('expiration_dateField').value = data.result.expiration_date;
-                            document.getElementById('personal_numberField').value = data.result.personal_number;
-                        } else {
-                            alert("辨識失敗，請重新嘗試。");
-                        }
-                    })
-                    .catch((error) => {
-                        console.error('Error:', error);
-                        text_scan.style.display = "none"; // 隱藏 "正在辨識中"
-                        alert("伺服器錯誤，請稍後再試。");
-                    });
-                } else {
-                    alert("請先選擇一個檔案！");
-                }
-            });
+            //         const formData = new FormData();
+            //         formData.append('image', file); // 將檔案附加到 FormData 中
+
+            //         fetch('/process_passport', { // 替換成你的 API 路徑
+            //             method: 'POST',
+            //             body: formData, // 傳送 FormData
+            //         })
+            //         .then((response) => response.json())
+            //         .then((data) => {
+            //             loadingOverlay.style.display = "none"; // 隱藏 "正在辨識中"
+            //             if (data.success) {
+            //                 // 將辨識結果分別填入表單欄位
+            //                 document.getElementById('nameField').value = data.result.name;
+            //                 document.getElementById('surnameField').value = data.result.surname;
+            //                 document.getElementById('sexField').value = data.result.sex;
+            //                 document.getElementById('dobField').value = data.result.date_of_birth;
+            //                 document.getElementById('nationalityField').value = data.result.nationality;
+            //                 document.getElementById('passportTypeField').value = data.result.passport_type;
+            //                 document.getElementById('passport_numberField').value = data.result.passport_number;
+            //                 document.getElementById('issuing_countryField').value = data.result.issuing_country;
+            //                 document.getElementById('expiration_dateField').value = data.result.expiration_date;
+            //                 document.getElementById('personal_numberField').value = data.result.personal_number;
+            //             } else {
+            //                 alert("辨識失敗，請重新嘗試。");
+            //             }
+            //         })
+            //         .catch((error) => {
+            //             console.error('Error:', error);
+            //             loadingOverlay.style.display = "none"; // 隱藏 "正在辨識中"
+            //             alert("伺服器錯誤，請稍後再試。");
+            //         });
+            //     } else {
+            //         alert("請先選擇一個檔案！");
+            //     }
+            // });
 
             // 確認並提交按鈕的點擊事件
             document.getElementById('confirmButton').addEventListener('click', () => {
@@ -258,6 +343,7 @@
 
                 // 將修改後的資料傳回伺服器
                 const updatedData = {
+                    personal_number,
                     name,
                     surname,
                     sex,
@@ -267,7 +353,6 @@
                     passport_number,
                     issuing_country,
                     expiration_date,
-                    personal_number,
                 };
 
                 fetch('/submit_passport', { // 替換為您的提交 API
@@ -282,7 +367,6 @@
                     if (result.success) {
                         alert('資料提交成功！');
                     } else {
-                        console.error('Error:', result.error);
                         alert('提交失敗，請重試！', result.error);
                     }
                 })
@@ -290,6 +374,49 @@
                     console.error('Error:', error);
                     alert('伺服器錯誤，請稍後再試。');
                 });
+            });
+
+            // 確保 loadingOverlay 初始隱藏
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            loadingOverlay.style.display = "none";
+
+            // 綁定「辨識」按鈕的點擊事件
+            document.getElementById('captureButton').addEventListener('click', () => {
+                const file = document.getElementById('imageInput').files[0];
+                if (file) {
+                    loadingOverlay.style.display = "flex"; // 顯示 loading 視窗
+
+                    const formData = new FormData();
+                    formData.append('image', file);
+
+                    fetch('/process_passport', { method: 'POST', body: formData })
+                        .then(response => response.json())
+                        .then(data => {
+                            loadingOverlay.style.display = "none"; // 隱藏 loading 視窗
+                            if (data.success) {
+                                // 將辨識結果分別填入表單欄位
+                                document.getElementById('nameField').value = data.result.name;
+                                document.getElementById('surnameField').value = data.result.surname;
+                                document.getElementById('sexField').value = data.result.sex;
+                                document.getElementById('dobField').value = data.result.date_of_birth;
+                                document.getElementById('nationalityField').value = data.result.nationality;
+                                document.getElementById('passportTypeField').value = data.result.passport_type;
+                                document.getElementById('passport_numberField').value = data.result.passport_number;
+                                document.getElementById('issuing_countryField').value = data.result.issuing_country;
+                                document.getElementById('expiration_dateField').value = data.result.expiration_date;
+                                document.getElementById('personal_numberField').value = data.result.personal_number;
+                            } else {
+                                alert("辨識失敗！");
+                            }
+                        })
+                        .catch(error => {
+                            console.error(error);
+                            loadingOverlay.style.display = "none"; // 隱藏 loading 視窗
+                            alert("伺服器錯誤！");
+                        });
+                } else {
+                    alert("請先選擇檔案！");
+                }
             });
 
         </script>

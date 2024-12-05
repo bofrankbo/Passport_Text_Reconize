@@ -92,31 +92,64 @@ def submit_passport():
         if not user_info:
             return jsonify({"success": False, "error": "No data received"}), 400
 
-        # 確保所有必要欄位都有值
-        required_fields = [
-            "name", "surname", "sex", "date_of_birth", "nationality",
-            "passport_type", "passport_number", "issuing_country",
-            "expiration_date", "personal_number"
-        ]
-        for field in required_fields:
-            if field not in user_info:
-                return jsonify({"success": False, "error": f"Missing field: {field}"}), 400
+        # 讀取現有的資料
+        existing_data = []
+        personal_number = user_info.get("personal_number")
+        passport_number = user_info.get("passport_number")
 
-        # 儲存到 CSV 檔案
-        with open(CSV_FILE_PATH, mode='a', newline='', encoding='utf-8') as csv_file:
-            csv_writer = csv.writer(csv_file)
-            csv_writer.writerow([
-                user_info.get("name", ""),
-                user_info.get("surname", ""),
-                user_info.get("sex", ""),
-                user_info.get("date_of_birth", ""),
-                user_info.get("nationality", ""),
-                user_info.get("passport_type", ""),
-                user_info.get("passport_number", ""),
-                user_info.get("issuing_country", ""),
-                user_info.get("expiration_date", ""),
-                user_info.get("personal_number", "")
+        # 如果沒有 personal_number，就使用 passport_number
+        if not personal_number:  
+            if not passport_number:
+                return jsonify({"success": False, "error": "No passport number"}), 400 # 沒有護照號碼
+            else:
+                personal_number = passport_number
+
+        # 讀取 CSV 並檢查是否有相同的 passport_number
+        with open(CSV_FILE_PATH, mode='r', newline='', encoding='utf-8') as csv_file:
+            csv_reader = csv.reader(csv_file)
+            existing_data = list(csv_reader)
+
+        # Flag to check if the passport_number is found
+        updated = False
+
+        # 檢查是否已經存在相同的 passport_number
+        for i, row in enumerate(existing_data):
+            if row and row[0] == personal_number:  # 假設 passport_number 是第 6 欄（索引 5）
+                # 覆寫資料
+                existing_data[i] = [
+                    personal_number,
+                    user_info.get("name", ""),
+                    user_info.get("surname", ""),
+                    user_info.get("sex", ""),
+                    user_info.get("date_of_birth", ""),
+                    user_info.get("nationality", ""),
+                    user_info.get("passport_type", ""),
+                    passport_number,
+                    user_info.get("issuing_country", ""),
+                    user_info.get("expiration_date", ""),
+                ]
+                updated = True
+                break  # 找到後就退出迴圈
+
+        # 如果沒有更新資料，就新增一筆資料
+        if not updated:
+            existing_data.append([
+                    personal_number,
+                    user_info.get("name", ""),
+                    user_info.get("surname", ""),
+                    user_info.get("sex", ""),
+                    user_info.get("date_of_birth", ""),
+                    user_info.get("nationality", ""),
+                    user_info.get("passport_type", ""),
+                    passport_number,
+                    user_info.get("issuing_country", ""),
+                    user_info.get("expiration_date", ""),
             ])
+
+        # 寫回 CSV 檔案
+        with open(CSV_FILE_PATH, mode='w', newline='', encoding='utf-8') as csv_file:
+            csv_writer = csv.writer(csv_file)
+            csv_writer.writerows(existing_data)
 
         return jsonify({"success": True}), 200
 
