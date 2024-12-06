@@ -17,9 +17,9 @@ if not os.path.exists(CSV_FILE_PATH):
     with open(CSV_FILE_PATH, mode='w', newline='', encoding='utf-8') as csv_file:
         csv_writer = csv.writer(csv_file)
         csv_writer.writerow([
-            "name", "surname", "sex", "date_of_birth", "nationality",
+            "personal_number", "name", "surname", "sex", "date_of_birth", "nationality",
             "passport_type", "passport_number", "issuing_country",
-            "expiration_date", "personal_number"
+            "expiration_date"
         ])
 
 TRIP_FILE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "trip_data.csv")
@@ -50,7 +50,6 @@ def suggest_id():
     df = pd.read_csv(CSV_FILE_PATH)
     df = df.fillna("NaN")
 
-    # 根據身分證或護照號碼進行模糊配對，忽略大小寫
     # 根據身分證或護照號碼進行模糊配對，忽略大小寫
     matches = df[
         df["personal_number"].str.contains(query, case=False, na=False) |
@@ -96,9 +95,9 @@ def submit_passport():
 
         # 確保所有必要欄位都有值
         required_fields = [
-            "name", "surname", "sex", "date_of_birth", "nationality",
+            "personal_number", "name", "surname", "sex", "date_of_birth", "nationality",
             "passport_type", "passport_number", "issuing_country",
-            "expiration_date", "personal_number"
+            "expiration_date"
         ]
         for field in required_fields:
             if field not in user_info:
@@ -262,9 +261,11 @@ def get_client():
         # 讀取旅客資料
         df = pd.read_csv(CSV_FILE_PATH)
         traveler = df[df["personal_number"] == personal_number].iloc[0]
+        # print(df.columns)
 
         # 回傳旅客資訊
         return jsonify({
+            "personal_number": traveler["personal_number"],
             "name": traveler["name"],
             "surname": traveler["surname"],
             "sex": traveler["sex"],
@@ -274,7 +275,6 @@ def get_client():
             "passport_number": traveler["passport_number"],
             "issuing_country": traveler["issuing_country"],
             "expiration_date": traveler["expiration_date"],
-            "personal_number": traveler["personal_number"]
         }), 200
     except IndexError:
         return jsonify({"error": "No traveler found"}), 404
@@ -333,4 +333,4 @@ def export_trip(trip_name):
 
 
 if __name__ == '__main__':
-    app_admin.run(port=8001)
+    app_admin.run(port=8001, debug=True)

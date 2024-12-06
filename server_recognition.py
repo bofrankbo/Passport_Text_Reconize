@@ -31,9 +31,9 @@ if not os.path.exists(CSV_FILE_PATH):
     with open(CSV_FILE_PATH, mode='w', newline='', encoding='utf-8') as csv_file:
         csv_writer = csv.writer(csv_file)
         csv_writer.writerow([
-            "name", "surname", "sex", "date_of_birth", "nationality",
+            "personal_number", "name", "surname", "sex", "date_of_birth", "nationality",
             "passport_type", "passport_number", "issuing_country",
-            "expiration_date", "personal_number"
+            "expiration_date"
         ])
 
 @app.route("/model.html")
