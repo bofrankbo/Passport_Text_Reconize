@@ -1,7 +1,5 @@
 from flask import Flask, render_template, request, jsonify, send_file
-import mysql.connector  # 使用 mysql-connector-python 來連接 MySQL
 
-import mysql.connector
 import pandas as pd
 from io import BytesIO
 import numpy as np
