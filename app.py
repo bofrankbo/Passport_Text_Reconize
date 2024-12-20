@@ -1,13 +1,13 @@
-from multiprocessing import Process
+from flask import Flask, render_template, url_for
 
-def run_recognition_server():
-    from server_recognition import app
-    app.run(port=8000)
+app = Flask(__name__)
 
-def run_admin_server():
-    from server_admin import app_admin
-    app_admin.run(port=8001)
 
-if __name__ == '__main__':
-    Process(target=run_recognition_server).start()
-    Process(target=run_admin_server).start()
+@app.route("/")
+def index():
+    return render_template("index.html")
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0")
+
