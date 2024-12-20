@@ -5,7 +5,7 @@ from io import BytesIO
 import os
 import csv
 
-app_admin = Flask(__name__)
+app = Flask(__name__)
 
 # print(os.path.dirname(os.path.abspath(__file__)))
 CSV_FILE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "user_data.csv")
@@ -25,19 +25,19 @@ if not os.path.exists(TRIP_FILE_PATH):
     df = pd.DataFrame(columns=["id", "name", "destination", "startDate", "participants"])
     df.to_csv(TRIP_FILE_PATH, index=False)
 
-@app_admin.route("/trip.html")
+@app.route("/trip.html")
 def trip():
     return render_template("backstage/trip.html")
 
-@app_admin.route("/admin.html")
+@app.route("/admin.html")
 def admin():
     return render_template("backstage/admin.html")
 
-@app_admin.route("/")
+@app.route("/")
 def root():
     return render_template("backstage/admin.html")
 
-@app_admin.route("/suggest_id", methods=["GET"])
+@app.route("/suggest_id", methods=["GET"])
 def suggest_id():
     query = request.args.get("query", "").strip()
     if not query:
@@ -57,7 +57,7 @@ def suggest_id():
     suggestions = matches.head(10).to_dict(orient="records")
     return jsonify(suggestions)
 
-@app_admin.route("/suggest_trip", methods=["GET"])
+@app.route("/suggest_trip", methods=["GET"])
 def suggest_trip():
     # 從前端獲取查詢參數
     query = request.args.get("query", "").strip()
@@ -82,7 +82,7 @@ def suggest_trip():
 
     return jsonify(suggestions)
 
-@app_admin.route("/submit_passport",methods=["POST"])
+@app.route("/submit_passport",methods=["POST"])
 def submit_passport():
     try:
         # 接收 JSON 資料
@@ -170,7 +170,7 @@ def save_user_info(user_info):
         csv_writer.writerows(existing_data)
 
 # 新增行程的接口
-@app_admin.route("/add_trip", methods=["POST"])
+@app.route("/add_trip", methods=["POST"])
 def add_trip():
     new_trip = request.get_json()
 
@@ -247,7 +247,7 @@ def add_trip():
 #             return jsonify({"error": "No data found"}), 404
 #     return jsonify({"error": "Passport number is required"}), 400
 
-@app_admin.route("/get_client", methods=["GET"])
+@app.route("/get_client", methods=["GET"])
 def get_client():
     personal_number = request.args.get("personal_number")
 
@@ -278,7 +278,7 @@ def get_client():
 
 # export
 # 匯出所有的客戶資料
-@app_admin.route("/export_csv")
+@app.route("/export_csv")
 def export_csv():
     # 讀取 Excel 文件
     df = pd.read_csv(CSV_FILE_PATH)
@@ -292,7 +292,7 @@ def export_csv():
     return send_file(output, mimetype='text/csv', download_name="users_data.csv", as_attachment=True)
 
 # 匯出此行程的旅客資料
-@app_admin.route("/export_trip/<trip_name>", methods=["GET"])
+@app.route("/export_trip/<trip_name>", methods=["GET"])
 def export_trip(trip_name):
     try:
         # 讀取行程資料
@@ -330,4 +330,4 @@ def export_trip(trip_name):
 
 
 if __name__ == '__main__':
-    app_admin.run(port=8001, debug=True)
+    app.run(host="0.0.0.0")
