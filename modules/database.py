@@ -1,0 +1,189 @@
+import pandas as pd
+from flask import jsonify, send_file
+from .config import CSV_FILE_PATH, TRIP_FILE_PATH
+import csv
+from io import BytesIO
+
+def save_client_info(request):
+    try:
+        # 接收 JSON 資料
+        client_info = request.get_json()
+        if not client_info:
+            return jsonify({"success": False, "error": "No data received"}), 400
+    
+            # 確保所有必要欄位都有值
+        required_fields = [
+            "personal_number", "name", "surname", "sex", "date_of_birth", "nationality",
+            "passport_type", "passport_number", "issuing_country",
+            "expiration_date"
+        ]
+        for field in required_fields:
+            if field not in client_info:
+                return jsonify({"success": False, "error": f"Missing field: {field}"}), 400
+
+        # 讀取現有的資料
+        existing_data = []
+        personal_number = client_info.get("personal_number")
+        passport_number = client_info.get("passport_number")
+
+        # 如果沒有 personal_number，就使用 passport_number
+        if not personal_number:  
+            if not passport_number:
+                return jsonify({"success": False, "error": "No passport number"}), 400 # 沒有護照號碼
+            else:
+                personal_number = passport_number
+
+        # 讀取 CSV 並檢查是否有相同的 passport_number
+        with open(CSV_FILE_PATH, mode='r', newline='', encoding='utf-8') as csv_file:
+            csv_reader = csv.reader(csv_file)
+            existing_data = list(csv_reader)
+
+        # Flag to check if the passport_number is found
+        updated = False
+        # 檢查是否已經存在相同的 passport_number
+        for i, row in enumerate(existing_data):
+            if row and row[0] == personal_number:  # 假設 passport_number 是第 6 欄（索引 5）
+                # 覆寫資料
+                existing_data[i] = [
+                    personal_number,
+                    client_info.get("name", ""),
+                    client_info.get("surname", ""),
+                    client_info.get("sex", ""),
+                    client_info.get("date_of_birth", ""),
+                    client_info.get("nationality", ""),
+                    client_info.get("passport_type", ""),
+                    passport_number,
+                    client_info.get("issuing_country", ""),
+                    client_info.get("expiration_date", ""),
+                ]
+                updated = True
+                break  # 找到後就退出迴圈
+
+        # 如果沒有更新資料，就新增一筆資料
+        if not updated:
+            existing_data.append([
+                    personal_number,
+                    client_info.get("name", ""),
+                    client_info.get("surname", ""),
+                    client_info.get("sex", ""),
+                    client_info.get("date_of_birth", ""),
+                    client_info.get("nationality", ""),
+                    client_info.get("passport_type", ""),
+                    passport_number,
+                    client_info.get("issuing_country", ""),
+                    client_info.get("expiration_date", ""),
+            ])
+
+        # 寫回 CSV 檔案
+        with open(CSV_FILE_PATH, mode='w', newline='', encoding='utf-8') as csv_file:
+            csv_writer = csv.writer(csv_file)
+            csv_writer.writerows(existing_data)
+
+            
+        return jsonify({"success": True}), 200
+
+    except Exception as e:
+        print(f"Error processing data: {e}")
+        return jsonify({"success": False, "error": "Internal server error"}), 500
+
+def get_client_data(request):
+    personal_number = request.args.get("personal_number")
+
+    if not personal_number:
+        return jsonify({"error": "Personal number is required"}), 400
+
+    try:
+        # 讀取旅客資料
+        df = pd.read_csv(CSV_FILE_PATH)
+        traveler = df[df["personal_number"] == personal_number].iloc[0]
+        # print(df.columns)
+
+        # 回傳旅客資訊
+        return jsonify({
+            "personal_number": traveler["personal_number"],
+            "name": traveler["name"],
+            "surname": traveler["surname"],
+            "sex": traveler["sex"],
+            "date_of_birth": traveler["date_of_birth"],
+            "nationality": traveler["nationality"],
+            "passport_type": traveler["passport_type"],
+            "passport_number": traveler["passport_number"],
+            "issuing_country": traveler["issuing_country"],
+            "expiration_date": traveler["expiration_date"],
+        }), 200
+    except IndexError:
+        return jsonify({"error": "No traveler found"}), 404
+
+def add_trip_data(request):
+    new_trip = request.get_json()
+    participants_list = [participant['personalNumber'] for participant in new_trip.get("participants", []) if "personalNumber" in participant]
+    df = pd.read_csv(TRIP_FILE_PATH)
+    existing_trip = df[df["name"] == new_trip["name"]]
+
+    if not existing_trip.empty:
+        df.loc[df["name"] == new_trip["name"], ["destination", "startDate", "participants"]] = [
+            new_trip["destination"],
+            new_trip["startDate"],
+            ";".join(participants_list)
+        ]
+        message = "行程已更新！"
+    else:
+        new_trip["id"] = len(df) + 1
+        new_trip_data = pd.DataFrame([{
+            "id": new_trip["id"],
+            "name": new_trip["name"],
+            "destination": new_trip["destination"],
+            "startDate": new_trip["startDate"],
+            "participants": ";".join(participants_list)
+        }])
+        df = pd.concat([df, new_trip_data], ignore_index=True)
+        message = "行程已創建！"
+
+    df.to_csv(TRIP_FILE_PATH, index=False, encoding='utf-8')
+    return jsonify({"message": message, "trip": new_trip}), 200
+
+def export_trip_data(trip_name):
+    try:
+        # 讀取行程資料
+        trips_df = pd.read_csv(TRIP_FILE_PATH)
+        trip = trips_df[trips_df["name"] == trip_name]
+
+        if trip.empty:
+            return jsonify({"error": "Trip not found"}), 404
+
+        # 獲取參與者的身分證號
+        participants = trip.iloc[0]["participants"].split(";")
+
+        # 讀取旅客資料
+        travelers_df = pd.read_csv(CSV_FILE_PATH)
+
+        # 篩選出參與者的完整資料
+        exported_travelers = travelers_df[travelers_df["personal_number"].isin(participants)][
+            ["name", "surname", "sex", "personal_number", "passport_number"]
+        ]
+
+        # 設置檔案名稱
+        csv_filename = f"{trip_name}.csv"
+
+        # 將資料寫入 BytesIO 物件（記憶體中的檔案）
+        output = BytesIO()
+        exported_travelers.to_csv(output, index=False, encoding="utf-8")
+        output.seek(0)  # 重置檔案指標
+
+        # 返回 CSV 文件
+        return send_file(output, as_attachment=True, download_name=csv_filename, mimetype="text/csv")
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+def export_client_data():
+    # 讀取 Excel 文件
+    df = pd.read_csv(CSV_FILE_PATH)
+
+    # 創建 BytesIO 物件
+    output = BytesIO()
+    df.to_csv(output, index=False)
+    output.seek(0)  # 重設指標，準備發送
+
+    # 返回 CSV 文件
+    return send_file(output, mimetype='text/csv', download_name="users_data.csv", as_attachment=True)
