@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from azure.storage.blob import BlobServiceClient
 import os
 import shutil
-from modules.config import DATA_FOLDER, connection_string, container_name
+from modules.config import DATA_FOLDER, connection_string, container_name, local_tz
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -21,7 +21,7 @@ def upload_to_blob():
     """壓縮並上傳本地 data 資料夾到 Azure Blob Storage"""
     logging.info("Compressing and uploading data folder to Azure Blob Storage...")
     try:
-        now = datetime.now()
+        now = datetime.now(local_tz)
         zip_filename = f"data_backup_{now.strftime('%Y-%m-%d_%H-%M-%S')}.zip"
         parent_folder = os.path.dirname(os.path.abspath(__file__))
         zip_filepath = os.path.join(f"{parent_folder}/tmp", zip_filename)
@@ -77,7 +77,7 @@ def scheduled_task():
 
 # 初始化定時任務
 scheduler = BackgroundScheduler()
-scheduler.add_job(func=scheduled_task, trigger="interval", hours=3)
+scheduler.add_job(func=scheduled_task, trigger="interval", hours=1)
 try:
     scheduler.start()
     logging.info("Scheduler started successfully.")

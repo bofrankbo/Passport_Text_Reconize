@@ -5,6 +5,10 @@ from .tasks import upload_to_blob, clean_old_files
 
 routes = Blueprint('routes', __name__)
 
+@routes.route("/test.html")
+def test():
+    return render_template("backstage/test.html")
+
 @routes.route("/trip.html")
 def trip():
     return render_template("backstage/trip.html")
