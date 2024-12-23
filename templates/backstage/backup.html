@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>首頁</title>
+    <title>備份管理</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
@@ -16,15 +16,19 @@
         }
 
         #mainContent {
-            margin: 0 auto; /* 水平置中 */
-            max-width: 1200px; /* 設置最大寬度，根據需要調整 */
+            margin: 0 auto;
+            /* 水平置中 */
+            max-width: 1200px;
+            /* 設置最大寬度，根據需要調整 */
             margin-top: 100px;
-            padding: 20px; /* 添加內邊距 */
+            padding: 20px;
+            /* 添加內邊距 */
         }
+
         .hidden {
             display: none;
         }
-        
+
 
         /* 調整內容區域的左邊距 */
         body {
@@ -35,23 +39,14 @@
             font-family: 'Arial', sans-serif;
             /* 字體設置 */
         }
-        .custom-toggler {
-            background-color: #343a40; /* 深色背景 */
-            border-color: #343a40; /* 深色邊框 */
-        }
-
-        .custom-toggler .navbar-toggler-icon {
-            background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba%288, 8, 8, 0.5%29' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
-        }
     </style>
 </head>
 
 <body>
-
     <!-- <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasScrolling" aria-controls="offcanvasScrolling">Enable body scrolling</button> -->
     <nav class="navbar navbar-dark bg-dark fixed-top">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">首頁</a>
+            <a class="navbar-brand" href="#">備份管理</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar"
                 aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -60,7 +55,8 @@
                 aria-labelledby="offcanvasNavbarLabel">
                 <div class="offcanvas-header">
                     <h5 class="offcanvas-title" id="offcanvasNavbarLabel">後台管理系統</h5>
-                    <button type="button" class="btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                    <button type="button" class="btn-close-white" data-bs-dismiss="offcanvas"
+                        aria-label="Close"></button>
                 </div>
                 <div class="offcanvas-body">
                     <ul class="navbar-nav flex-column">
@@ -82,15 +78,65 @@
         </div>
     </nav>
 
-    <div id="mainContent" class="container">
-        <h1>XX旅行社後台管理系統</h1>
+    <div id="mainContent" class="container mt-5">
+        <h3>下次自動備份時間</h3>
+        <p id="nextBackupTime">{{ next_backup_time }}</p>
+
+        <h3>備份紀錄</h3>
+        <p>
+        <ul id="backupRecords">
+            {% for blob in blob_list %}
+            <li>{{ blob }}</li>
+            {% endfor %}
+        </ul>
+        </p>
+
+        <h3>手動備份</h3>
+        <p>
+            <button id="manualBackupBtn" class="btn btn-primary">手動備份</button>
+            <div id="backuping" class="hidden">
+                <p>正在備份...</p>
+            </div>
+        </p>
+
+        <h3>清除多餘檔案</h3>
+        <p>保留過去24小時的備份，24小時以前則是每24小時保留一份</p>
+        <p>
+            <button id="cleanupBtn" class="btn btn-warning">清除多餘檔案</button>
+            <div id="cleaning" class="hidden">
+                <p>正在清除...</p>
+            </div>
+        </p>
     </div>
 
-
     <script>
+        document.getElementById('manualBackupBtn').addEventListener('click', function () {
+            // 顯示備份中訊息
+            document.getElementById('backuping').classList.remove('hidden');
+            fetch('/upload', {
+                method: 'POST'
+            }).then(function (response) {
+                document.getElementById('backuping').classList.add('hidden');
+                return response.json();
+            }).then(function (data) {
+                document.getElementById('backuping').classList.add('hidden');
+                alert(data.message);
+            });
+        });
 
+        document.getElementById('cleanupBtn').addEventListener('click', function () {
+            document.getElementById('cleaning').classList.remove('hidden');
+            fetch('clean', {
+                method: 'POST'
+            }).then(function (response) {
+                document.getElementById('cleaning').classList.add('hidden');
+                return response.json();
+            }).then(function (data) {
+                document.getElementById('cleaning').classList.add('hidden');
+                alert(data.message);
+            });
+        });
     </script>
-
 </body>
 
 </html>

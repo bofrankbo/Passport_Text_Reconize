@@ -14,12 +14,15 @@ logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 # 初始化 BlobServiceClient 和 ContainerClient
-blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+blob_service_client = BlobServiceClient.from_connection_string(
+    connection_string)
 container_client = blob_service_client.get_container_client(container_name)
+
 
 def upload_to_blob():
     """壓縮並上傳本地 data 資料夾到 Azure Blob Storage"""
-    logging.info("Compressing and uploading data folder to Azure Blob Storage...")
+    logging.info(
+        "Compressing and uploading data folder to Azure Blob Storage...")
     try:
         now = datetime.now(local_tz)
         zip_filename = f"data_backup_{now.strftime('%Y-%m-%d_%H-%M-%S')}.zip"
@@ -27,15 +30,17 @@ def upload_to_blob():
         zip_filepath = os.path.join(f"{parent_folder}/tmp", zip_filename)
 
         # 壓縮 data 資料夾
-        shutil.make_archive(zip_filepath.replace('.zip', ''), 'zip', DATA_FOLDER)
+        shutil.make_archive(zip_filepath.replace(
+            '.zip', ''), 'zip', DATA_FOLDER)
 
         # 上傳壓縮檔案
         blob_client = container_client.get_blob_client(zip_filename)
         with open(zip_filepath, "rb") as data:
             blob_client.upload_blob(data, overwrite=True)
 
-        logging.info(f"Compressed data folder uploaded successfully as {zip_filename}.")
-        
+        logging.info(
+            f"Compressed data folder uploaded successfully as {zip_filename}.")
+
         # 刪除本地壓縮檔案
         os.remove(zip_filepath)
     except Exception as e:
@@ -69,15 +74,40 @@ def clean_old_files():
     except Exception as e:
         logging.error(f"Error cleaning old files: {e}")
 
+
+def get_blob_list():
+    """取得 Azure Blob Storage 中的檔案列表"""
+    try:
+        blobs = container_client.list_blobs()
+        return [blob.name for blob in blobs]
+    except Exception as e:
+        logging.error(f"Error getting blob list: {e}")
+        return []
+
+
+def get_next_backup_time():
+    """取得下次備份時間"""
+    job = scheduler.get_job("backup_job")
+    if job:
+        print(job.next_run_time)
+        next_run_time = job.next_run_time
+        next_run_time = next_run_time.astimezone(local_tz)
+        return next_run_time.strftime("%Y-%m-%d %H:%M:%S")
+    else:
+        return "No job found."
+
+
 def scheduled_task():
     """定時任務：上傳檔案並清理舊檔案"""
     logging.info("Running scheduled task...")
     upload_to_blob()
     clean_old_files()
 
+
 # 初始化定時任務
 scheduler = BackgroundScheduler()
-scheduler.add_job(func=scheduled_task, trigger="interval", hours=1)
+scheduler.add_job(func=scheduled_task, trigger="interval",
+                  hours=3, id='backup_job')
 try:
     scheduler.start()
     logging.info("Scheduler started successfully.")
@@ -85,9 +115,12 @@ except Exception as e:
     logging.error(f"Error starting Scheduler: {e}")
 
 # 停止程式時，確保 Scheduler 正確關閉
+
+
 def shutdown_scheduler():
     scheduler.shutdown()
     logging.info("Scheduler shut down successfully.")
+
 
 # 註冊應用關閉時調用的函數
 atexit.register(shutdown_scheduler)

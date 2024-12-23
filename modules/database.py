@@ -4,13 +4,14 @@ from .config import CSV_FILE_PATH, TRIP_FILE_PATH
 import csv
 from io import BytesIO
 
+
 def save_client_info(request):
     try:
         # 接收 JSON 資料
         client_info = request.get_json()
         if not client_info:
             return jsonify({"success": False, "error": "No data received"}), 400
-    
+
             # 確保所有必要欄位都有值
         required_fields = [
             "personal_number", "name", "surname", "sex", "date_of_birth", "nationality",
@@ -27,9 +28,10 @@ def save_client_info(request):
         passport_number = client_info.get("passport_number")
 
         # 如果沒有 personal_number，就使用 passport_number
-        if not personal_number:  
+        if not personal_number:
             if not passport_number:
-                return jsonify({"success": False, "error": "No passport number"}), 400 # 沒有護照號碼
+                # 沒有護照號碼
+                return jsonify({"success": False, "error": "No passport number"}), 400
             else:
                 personal_number = passport_number
 
@@ -62,16 +64,16 @@ def save_client_info(request):
         # 如果沒有更新資料，就新增一筆資料
         if not updated:
             existing_data.append([
-                    personal_number,
-                    client_info.get("name", ""),
-                    client_info.get("surname", ""),
-                    client_info.get("sex", ""),
-                    client_info.get("date_of_birth", ""),
-                    client_info.get("nationality", ""),
-                    client_info.get("passport_type", ""),
-                    passport_number,
-                    client_info.get("issuing_country", ""),
-                    client_info.get("expiration_date", ""),
+                personal_number,
+                client_info.get("name", ""),
+                client_info.get("surname", ""),
+                client_info.get("sex", ""),
+                client_info.get("date_of_birth", ""),
+                client_info.get("nationality", ""),
+                client_info.get("passport_type", ""),
+                passport_number,
+                client_info.get("issuing_country", ""),
+                client_info.get("expiration_date", ""),
             ])
 
         # 寫回 CSV 檔案
@@ -79,12 +81,12 @@ def save_client_info(request):
             csv_writer = csv.writer(csv_file)
             csv_writer.writerows(existing_data)
 
-            
         return jsonify({"success": True}), 200
 
     except Exception as e:
         print(f"Error processing data: {e}")
         return jsonify({"success": False, "error": "Internal server error"}), 500
+
 
 def get_client_data(request):
     personal_number = request.args.get("personal_number")
@@ -114,9 +116,11 @@ def get_client_data(request):
     except IndexError:
         return jsonify({"error": "No traveler found"}), 404
 
+
 def add_trip_data(request):
     new_trip = request.get_json()
-    participants_list = [participant['personalNumber'] for participant in new_trip.get("participants", []) if "personalNumber" in participant]
+    participants_list = [participant['personalNumber'] for participant in new_trip.get(
+        "participants", []) if "personalNumber" in participant]
     df = pd.read_csv(TRIP_FILE_PATH)
     existing_trip = df[df["name"] == new_trip["name"]]
 
@@ -141,6 +145,7 @@ def add_trip_data(request):
 
     df.to_csv(TRIP_FILE_PATH, index=False, encoding='utf-8')
     return jsonify({"message": message, "trip": new_trip}), 200
+
 
 def export_trip_data(trip_name):
     try:
@@ -175,7 +180,8 @@ def export_trip_data(trip_name):
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    
+
+
 def export_client_data():
     # 讀取 Excel 文件
     df = pd.read_csv(CSV_FILE_PATH)
@@ -187,3 +193,41 @@ def export_client_data():
 
     # 返回 CSV 文件
     return send_file(output, mimetype='text/csv', download_name="users_data.csv", as_attachment=True)
+
+
+def import_client_data(request):
+    if request.method == 'POST':
+        if 'csvFile' not in request.files:
+            return jsonify({"error": "No file part"}), 400
+
+        file = request.files['csvFile']
+
+        if file.filename == '':
+            return jsonify({"error": "No selected file"}), 400
+
+        if file and file.filename.endswith('.csv'):
+            try:
+                df = pd.read_csv(file)
+
+                # 檢查是否包含所需的欄位
+                required_columns = [
+                    'personal_number', 'name', 'surname', 'sex', 'date_of_birth',
+                    'nationality', 'passport_type', 'passport_number',
+                    'issuing_country', 'expiration_date'
+                ]
+
+                if not all(column in df.columns for column in required_columns):
+                    return jsonify({"error": "CSV file is missing required columns"}), 400
+
+                df.to_csv(CSV_FILE_PATH, index=False, encoding='utf-8')
+
+                return jsonify({"message": "File successfully uploaded and processed"}), 200
+
+            except Exception as e:
+                return jsonify({"error": str(e)}), 500
+
+    return jsonify({"error": "File Upload Failed"}), 400
+
+
+def import_trip_data():
+    pass
