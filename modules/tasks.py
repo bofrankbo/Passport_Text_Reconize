@@ -9,14 +9,14 @@ from datetime import datetime, timedelta
 from azure.storage.blob import BlobServiceClient
 import os
 import shutil
-from modules.config import DATA_FOLDER, connection_string, container_name, local_tz
+from modules.config import DATA_FOLDER, azure_blob_connection_string, azure_blob_container_name, local_tz
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 # 初始化 BlobServiceClient 和 ContainerClient
 blob_service_client = BlobServiceClient.from_connection_string(
-    connection_string)
-container_client = blob_service_client.get_container_client(container_name)
+    azure_blob_connection_string)
+container_client = blob_service_client.get_container_client(azure_blob_container_name)
 
 
 def upload_to_blob():

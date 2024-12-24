@@ -2,14 +2,18 @@ from flask import Blueprint, render_template, request, jsonify, send_file
 from .database import save_client_info, get_client_data, add_trip_data, export_trip_data, export_client_data, import_client_data, import_trip_data
 from .utils import suggest_id, suggest_trip
 from .tasks import upload_to_blob, clean_old_files, get_next_backup_time, get_blob_list
+from .ocr import ocr_passport
 
 routes = Blueprint('routes', __name__)
 
 
 @routes.route("/")
 def root():
-    return render_template("backstage/admin.html")
+    return render_template("website/passport.html")
 
+@routes.route("/passport.html")
+def passport():
+    return render_template("website/passport.html")
 
 @routes.route("/admin.html")
 def admin():
@@ -90,3 +94,7 @@ def clean_now():
     """手動觸發清理"""
     clean_old_files()
     return jsonify({"message": "Old files cleaned manually."})
+
+@routes.route("/process_passport",methods=["POST"])
+def process_passport():
+    return ocr_passport(request)

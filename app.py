@@ -1,6 +1,5 @@
 from flask import Flask
 from modules.routes import routes
-from modules.tasks import scheduler
 import logging
 
 app = Flask(__name__)
@@ -10,4 +9,4 @@ logging.basicConfig(level=logging.INFO,
 
 if __name__ == "__main__":
     logging.info("Starting Flask app with scheduled tasks...")
-    app.run(host="0.0.0.0")
+    app.run(host="0.0.0.0", debug=True)
