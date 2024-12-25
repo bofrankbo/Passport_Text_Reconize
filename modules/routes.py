@@ -30,11 +30,6 @@ def passport():
     return render_template("website/passport.html")
 
 
-@routes.route('/backstage')
-def backstage():
-    return render_template("backstage/admin.html")
-
-
 @routes.route("/backstage/admin.html")
 @auth.login_required
 def admin():
