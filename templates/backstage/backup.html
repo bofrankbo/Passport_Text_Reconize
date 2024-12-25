@@ -94,19 +94,52 @@
         <h3>手動備份</h3>
         <p>
             <button id="manualBackupBtn" class="btn btn-primary">手動備份</button>
-            <div id="backuping" class="hidden">
-                <p>正在備份...</p>
-            </div>
+        <div id="backuping" class="hidden">
+            <p>正在備份...</p>
+        </div>
         </p>
 
         <h3>清除多餘檔案</h3>
         <p>保留過去24小時的備份，24小時以前則是每24小時保留一份</p>
         <p>
             <button id="cleanupBtn" class="btn btn-warning">清除多餘檔案</button>
-            <div id="cleaning" class="hidden">
-                <p>正在清除...</p>
-            </div>
+        <div id="cleaning" class="hidden">
+            <p>正在清除...</p>
+        </div>
         </p>
+        <div class="row align-items-end">
+            <div class="mt-3">
+                <div class="card border-info">
+                    <div class="card-header bg-info text-gray">
+                        <h5 class="mb-0">資料匯入匯出</h5>
+                    </div>
+
+                    <p>
+                        <a href="/export_csv" class="btn btn-success">匯出所有旅客資料</a>
+                        <button class="btn btn-success" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#collapseWidthExample" aria-expanded="false"
+                            aria-controls="collapseWidthExample">
+                            匯入並覆蓋所有旅客資料
+                        </button>
+                    </p>
+                    <div style="min-height: 120px;">
+                        <div class="collapse collapse-horizontal" id="collapseWidthExample">
+                            <div class="card card-body" style="width: 300px;">
+                                <form action="/import_csv" method="post" enctype="multipart/form-data"
+                                    class="d-inline-block">
+                                    只能上傳格式正確的 CSV 檔案
+                                    <div class="mb-3">
+                                        <input class="form-control" type="file" id="csvFile" name="csvFile"
+                                            accept=".csv">
+                                    </div>
+                                    <button type="submit" class="btn btn-danger float-end">上傳</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>

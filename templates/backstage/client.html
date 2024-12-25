@@ -38,12 +38,61 @@
             font-family: 'Arial', sans-serif;
             /* 字體設置 */
         }
+
+        table {
+            width: 100%;
+            table-layout: fixed;
+            /* 固定佈局 */
+            font-size: 13px;
+            /* 縮小字形大小 */
+        }
+
+        th,
+        td {
+            padding: 8px;
+            border: 1px solid #ddd;
+            width: 110px;
+            /* 固定寬度 */
+        }
+
+        th.index,
+        td.index {
+            width: 40px;
+            /* Index 欄位寬度 */
+        }
+
+        th.sex,
+        td.sex {
+            width: 110px;
+            /* 性別欄位寬度 */
+        }
+
+        td input[type="text"],
+        td input[type="date"],
+        td select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 5px 10px;
+            font-size: 14px;
+            line-height: 1.42857143;
+            color: #555;
+            background-color: #fff;
+            background-image: none;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            height: 34px;
+            /* 確保select元素的高度與input元素一致 */
+        }
+
+        th.date,
+        td.date {
+            width: 140px;
+        }
     </style>
 </head>
 
 <body>
 
-    <!-- <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasScrolling" aria-controls="offcanvasScrolling">Enable body scrolling</button> -->
     <nav class="navbar navbar-dark bg-dark fixed-top">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">客戶管理</a>
@@ -55,7 +104,8 @@
                 aria-labelledby="offcanvasNavbarLabel">
                 <div class="offcanvas-header">
                     <h5 class="offcanvas-title" id="offcanvasNavbarLabel">後台管理系統</h5>
-                    <button type="button" class="btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                    <button type="button" class="btn-close-white" data-bs-dismiss="offcanvas"
+                        aria-label="Close"></button>
                 </div>
                 <div class="offcanvas-body">
                     <ul class="navbar-nav flex-column">
@@ -78,183 +128,134 @@
     </nav>
 
     <div id="mainContent" class="container">
-
-        <!-- 使用 Flexbox 實現左右佈局 -->
-        <!-- 新增旅客 -->
-        <div class="row align-items-end">
-            <div class="row-md-4">
-                <label for="suggest" class="form-label">查詢身分證或護照號碼</label>
-                <input type="text" id="suggest" class="form-control" placeholder="A12345678" oninput="suggestNumber()">
-                <ul id="suggestions" class="list-group position-absolute mt-1" style="display: none; z-index: 100;">
-                </ul>
-            </div>
-            <div class="col-md-4">
-                <label for="personalNumber" class="form-label">身分證字號</label>
-                <div id="personalNumber" class="form-control bg-light text-dark"
-                    style="height: 38px; min-width: 200px; text-align: left;"> </div>
-            </div>
-            <div class="col-md-4">
-                <label for="passportNumber" class="form-label">護照號碼</label>
-                <div id="passportNumber" class="form-control bg-light text-dark"
-                    style="height: 38px; min-width: 200px; text-align: left;"> </div>
-            </div>
-            <div class="col-md-4">
-                <button onclick="searchUser()" class="btn btn-secondary w-100">查詢客戶</button>
+        <div class="card border-info">
+            <div class="card-header bg-info text-gray">
+                <h5 class="mb-0">旅客管理</h5>
             </div>
 
-            <!-- 顯示查詢結果 -->
-            <div class="md-4">
-                <div id="result" class="alert alert-info" style="display: none;"></div>
-            </div>
-
-            <div class="mt-3">
-                <div class="card">
-                    <div class="card-body text-start">
-                        <h5 class="card-title">資料管理</h5>
-                    </div>
-
-                    <p>
-                        <a href="/export_csv" class="btn btn-success">匯出所有旅客資料</a>
-                        <button class="btn btn-success" type="button" data-bs-toggle="collapse"
-                            data-bs-target="#collapseWidthExample" aria-expanded="false"
-                            aria-controls="collapseWidthExample">
-                            匯入並覆蓋所有旅客資料
-                        </button>
-                    </p>
-                    <div style="min-height: 120px;">
-                        <div class="collapse collapse-horizontal" id="collapseWidthExample">
-                            <div class="card card-body" style="width: 300px;">
-                                <form action="/import_csv" method="post" enctype="multipart/form-data"
-                                    class="d-inline-block">
-                                    只能上傳格式正確的 CSV 檔案
-                                    <div class="mb-3">
-                                        <input class="form-control" type="file" id="csvFile" name="csvFile"
-                                            accept=".csv">
-                                    </div>
-                                    <button type="submit" class="btn btn-danger float-end">上傳</button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
+            <div class="card-body">
+                <div class="row-md-4">
+                    <form class="d-flex" role="search">
+                        <input type="search" class="form-control me-2" id="suggest" placeholder="查詢身分證或護照號碼"
+                            aria-label="Search" oninput="suggestNumber()">
+                        <button class="btn btn-outline-success" type="submit">Search</button>
+                    </form>
+                    <ul id="suggestions" class="list-group position-absolute mt-1" style="display: none; z-index: 100;">
+                    </ul>
                 </div>
+
+                <div class="md-4">
+                    <div id="result" class="alert alert-info" style="display: none;"></div>
+                </div>
+                <p></p>
+                <div id="travelersTable" style="overflow-x:auto;">
+                    <table id="clientsTable" class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th class="index"></th>
+                                <th>中文姓名</th>
+                                <th>身分證字號</th>
+                                <th>英文名</th>
+                                <th>英文姓</th>
+                                <th class="sex">性別</th>
+                                <th class="date">出生日期</th>
+                                <th>國籍</th>
+                                <th>護照號碼</th>
+                                <th>發證國</th>
+                                <th class="date">護照期限</th>
+                            </tr>
+                        </thead>
+                        <tbody id="travelersBody">
+                            <!-- 旅客資料將動態插入這裡 -->
+                        </tbody>
+                    </table>
+                </div>
+                <p></p>
+                <button onclick="saveChanges()" class="btn btn-primary float-end">儲存更改</button>
+
             </div>
         </div>
     </div>
 
 
     <script>
-        // 自動推薦系統
+        // 將 data 設定為公共變數
+        let clientsData = [];
+
+        function generateTravelerRow(traveler, index) {
+            return `
+                <tr>
+                    <td class="index">${index + 1}</td>
+                    <td><input type="text" name="name_ch" value="${traveler.name_ch}"></td>
+                    <td><input type="text" name="personal_number" value="${traveler.personal_number}"></td>
+                    <td><input type="text" name="name" value="${traveler.name}"></td>
+                    <td><input type="text" name="surname" value="${traveler.surname}"></td>
+                    <td class="sex">
+                        <select type="sex" id="sexField" class="form-control">
+                            <option value='M' ${traveler.sex === 'M' ? 'selected' : ''}>男 (M)</option>
+                            <option value='F' ${traveler.sex === 'F' ? 'selected' : ''}>女 (F)</option>
+                            <option value='X' ${traveler.sex === 'X' ? 'selected' : ''}>其他 (X)</option>
+                        </select>
+                    </td>
+                    <td><input type="date" name="date_of_birth" value="${traveler.date_of_birth}"></td>
+                    <td><input type="text" name="nationality" value="${traveler.nationality}"></td>
+                    <td><input type="text" name="passport_number" value="${traveler.passport_number}"></td>
+                    <td><input type="text" name="issuing_country" value="${traveler.issuing_country}"></td>
+                    <td><input type="date" name="expiration_date" value="${traveler.expiration_date}"></td>
+                </tr>
+            `;
+        }
+
         function suggestNumber() {
-            const input = document.getElementById("suggest").value;
-            const suggestionsList = document.getElementById("suggestions");
+            const input = document.getElementById('suggest').value.toLowerCase();
+            const suggestions = clientsData.filter(client =>
+                client.passport_number.toLowerCase().includes(input) ||
+                client.personal_number.toLowerCase().includes(input)
+            );
+            console.log(suggestions);
 
-            if (!input && !input_passport) {
-                suggestionsList.style.display = "none";
-                return;
-            }
-
-            // 根據身分證或護照建議旅客
-            fetch(`/suggest_id?query=${input}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.length > 0) {
-                        suggestionsList.style.display = "block";
-                        suggestionsList.innerHTML = data
-                            .map(user => `
-                                    <li class="list-group-item" onclick='selected(${JSON.stringify(user)})'>
-                                        ${user.personal_number} / ${user.passport_number} - ${user.name} ${user.surname}
-                                    </li>`)
-                            .join("");
-                    } else {
-                        suggestionsList.style.display = "none";
-                    }
-                })
-                .catch(error => {
-                    console.error("Error fetching suggestions:", error);
-                });
+            const travelersBody = document.getElementById('travelersBody');
+            travelersBody.innerHTML = suggestions.map(generateTravelerRow).join('');
         }
 
-        // selected -------------------------------------
-        // 選擇建議的旅客
-        function selected(user) {
-            traveler = user;
-            document.getElementById("personalNumber").textContent = user.personal_number;
-            document.getElementById("passportNumber").textContent = user.passport_number;
-            document.getElementById("suggestions").style.display = "none";
-        }
-
-        // 查詢用戶
-        function searchUser() {
-            const personalNumber = document.getElementById("personalNumber").textContent.trim();
-
-            if (!personalNumber && !passportNumber) {
-                alert("請至少輸入身分證號或護照號碼！");
-                return;
-            }
-
-            // 根據輸入的身分證號或護照號碼查詢
-            fetch(`/get_client?personal_number=${personalNumber}`)
+        document.addEventListener("DOMContentLoaded", function () {
+            fetch('/get_client?')
                 .then(response => response.json())
                 .then(data => {
-                    const resultDiv = document.getElementById("result");
-
-                    if (data.error) {
-                        resultDiv.style.display = "none";
-                        alert(data.error);
-                    } else {
-                        resultDiv.innerHTML = `
-                                <strong>名字:</strong> <input type="text" id="nameField" value="${data.name}" /><br>
-                                <strong>姓氏:</strong> <input type="text" id="surnameField" value="${data.surname}" /><br>
-                                <strong>性別:</strong> <input type="text" id="sexField" value="${data.sex}" /><br>
-                                <strong>出生日期:</strong> <input type="text" id="dobField" value="${data.date_of_birth}" /><br>
-                                <strong>國籍:</strong> <input type="text" id="nationalityField" value="${data.nationality}" /><br>
-                                <strong>護照類型:</strong> <input type="text" id="passportTypeField" value="${data.passport_type}" /><br>
-                                <strong>護照號碼:</strong> <input type="text" id="passport_numberField" value="${data.passport_number}" /><br>
-                                <strong>發證國:</strong> <input type="text" id="issuing_countryField" value="${data.issuing_country}" /><br>
-                                <strong>有效期限:</strong> <input type="text" id="expiration_dateField" value="${data.expiration_date}" /><br>
-                                <strong>身分證號:</strong> <input type="text" id="personal_numberField" value="${data.personal_number}" /><br>
-                                <button onclick="saveChanges()">儲存更改</button>
-                            `;
-                        resultDiv.style.display = "block";
-                    }
+                    clientsData = data;
+                    const travelersBody = document.getElementById("travelersBody");
+                    travelersBody.innerHTML = data.map(generateTravelerRow).join("");
                 })
-                .catch(error => {
-                    alert("查詢時發生錯誤！請稍後再試。");
-                });
+                .catch(error => console.error('Error fetching travelers:', error));
+        });
+
+
+        function updateClientsData() {
+            let table = document.getElementById("clientsTable");
+            for (let i = 1, row; row = table.rows[i]; i++) {
+                let client = {};
+                client.name_ch = row.cells[1].querySelector('input').value;
+                client.name = row.cells[2].querySelector('input').value;
+                client.surname = row.cells[3].querySelector('input').value;
+                client.sex = row.cells[4].querySelector('select').value;
+                client.date_of_birth = row.cells[5].querySelector('input').value;
+                client.nationality = row.cells[6].querySelector('input').value;
+                client.passport_number = row.cells[7].querySelector('input').value;
+                client.issuing_country = row.cells[8].querySelector('input').value;
+                client.expiration_date = row.cells[9].querySelector('input').value;
+                client.personal_number = row.cells[10].querySelector('input').value;
+                clientsData.push(client);
+            }
         }
 
         function saveChanges() {
-            const name = document.getElementById('nameField').value;
-            const surname = document.getElementById('surnameField').value;
-            const sex = document.getElementById('sexField').value;
-            const dob = document.getElementById('dobField').value;
-            const nationality = document.getElementById('nationalityField').value;
-            const passportType = document.getElementById('passportTypeField').value;
-            const passport_number = document.getElementById('passport_numberField').value;
-            const issuing_country = document.getElementById('issuing_countryField').value;
-            const expiration_date = document.getElementById('expiration_dateField').value;
-            const personal_number = document.getElementById('personal_numberField').value;
-
-            // 將修改後的資料傳回伺服器
-            const updatedData = {
-                name,
-                surname,
-                sex,
-                date_of_birth: dob,
-                nationality,
-                passport_type: passportType,
-                passport_number,
-                issuing_country,
-                expiration_date,
-                personal_number,
-            };
-
+            updateClientsData();
             fetch('/submit_passport', { // 替換為您的提交 API
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(updatedData),
+                body: JSON.stringify(clientsData),
             })
                 .then((response) => response.json())
                 .then((result) => {
@@ -270,7 +271,6 @@
                     alert('伺服器錯誤，請稍後再試。');
                 });
         }
-
     </script>
 
 </body>

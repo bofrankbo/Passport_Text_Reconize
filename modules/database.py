@@ -6,75 +6,73 @@ from io import BytesIO
 
 
 def save_client_info(request):
+    print("Saving client info...")
     try:
-        # 接收 JSON 資料
-        client_info = request.get_json()
-        if not client_info:
+        clients = request.get_json()
+        if not clients:
             return jsonify({"success": False, "error": "No data received"}), 400
 
-            # 確保所有必要欄位都有值
-        required_fields = [
-            "personal_number", "name", "surname", "sex", "date_of_birth", "nationality",
-            "passport_type", "passport_number", "issuing_country",
-            "expiration_date"
-        ]
-        for field in required_fields:
-            if field not in client_info:
-                return jsonify({"success": False, "error": f"Missing field: {field}"}), 400
-
-        # 讀取現有的資料
         existing_data = []
-        personal_number = client_info.get("personal_number")
-        passport_number = client_info.get("passport_number")
-
-        # 如果沒有 personal_number，就使用 passport_number
-        if not personal_number:
-            if not passport_number:
-                # 沒有護照號碼
-                return jsonify({"success": False, "error": "No passport number"}), 400
-            else:
-                personal_number = passport_number
-
-        # 讀取 CSV 並檢查是否有相同的 passport_number
         with open(CSV_FILE_PATH, mode='r', newline='', encoding='utf-8') as csv_file:
             csv_reader = csv.reader(csv_file)
             existing_data = list(csv_reader)
 
-        # Flag to check if the passport_number is found
-        updated = False
-        # 檢查是否已經存在相同的 passport_number
-        for i, row in enumerate(existing_data):
-            if row and row[0] == personal_number:  # 假設 passport_number 是第 6 欄（索引 5）
-                # 覆寫資料
-                existing_data[i] = [
-                    personal_number,
-                    client_info.get("name", ""),
-                    client_info.get("surname", ""),
-                    client_info.get("sex", ""),
-                    client_info.get("date_of_birth", ""),
-                    client_info.get("nationality", ""),
-                    client_info.get("passport_type", ""),
-                    passport_number,
-                    client_info.get("issuing_country", ""),
-                    client_info.get("expiration_date", ""),
-                ]
-                updated = True
-                break  # 找到後就退出迴圈
+        for client in clients:
+            required_fields = [
+                "personal_number", "name", "surname", "sex", "date_of_birth", "nationality",
+                "passport_number", "issuing_country",
+                "expiration_date", "name_ch"
+            ]
+            for field in required_fields:
+                if field not in client:
+                    return jsonify({"success": False, "error": f"Missing field: {field} Client:{client}"}), 400
 
-        # 如果沒有更新資料，就新增一筆資料
-        if not updated:
-            existing_data.append([
-                personal_number,
-                client_info.get("name", ""),
-                client_info.get("surname", ""),
-                client_info.get("sex", ""),
-                client_info.get("date_of_birth", ""),
-                client_info.get("nationality", ""),
-                client_info.get("passport_type", ""),
-                passport_number,
-                client_info.get("issuing_country", ""),
-                client_info.get("expiration_date", ""),
-            ])
+            personal_number = client.get("personal_number")
+            passport_number = client.get("passport_number")
+
+            # 如果沒有 personal_number，就使用 passport_number
+            if personal_number == "":
+                if passport_number == "":
+                    return jsonify({"success": False, "error": "No passport number"}), 400
+                else:
+                    personal_number = passport_number
+
+            updated = False
+            # 檢查是否已經存在相同的 passport_number
+            for i, row in enumerate(existing_data):
+                if row and row[0] == personal_number:
+                    print(f"Updating data for {personal_number}...")
+                    # 覆寫資料
+                    existing_data[i] = [
+                        personal_number,
+                        client.get("name", ""),
+                        client.get("surname", ""),
+                        client.get("sex", ""),
+                        client.get("date_of_birth", ""),
+                        client.get("nationality", ""),
+                        passport_number,
+                        client.get("issuing_country", ""),
+                        client.get("expiration_date", ""),
+                        client.get("name_ch", ""),
+                    ]
+                    updated = True
+                    break  # 找到後就退出迴圈
+
+            # 如果沒有更新資料，就新增一筆資料
+            if not updated:
+                print(f"Adding data for {personal_number}...")
+                existing_data.append([
+                    personal_number,
+                    client.get("name", ""),
+                    client.get("surname", ""),
+                    client.get("sex", ""),
+                    client.get("date_of_birth", ""),
+                    client.get("nationality", ""),
+                    passport_number,
+                    client.get("issuing_country", ""),
+                    client.get("expiration_date", ""),
+                    client.get("name_ch", ""),
+                ])
 
         # 寫回 CSV 檔案
         with open(CSV_FILE_PATH, mode='w', newline='', encoding='utf-8') as csv_file:
@@ -90,31 +88,21 @@ def save_client_info(request):
 
 def get_client_data(request):
     personal_number = request.args.get("personal_number")
+    df = pd.read_csv(CSV_FILE_PATH)
 
+    # 回傳所有旅客資料
     if not personal_number:
-        return jsonify({"error": "Personal number is required"}), 400
+        df = df.fillna("")
+        return jsonify(df.to_dict(orient="records")), 200
 
+    # 回傳特定旅客資料
     try:
-        # 讀取旅客資料
-        df = pd.read_csv(CSV_FILE_PATH)
         traveler = df[df["personal_number"] == personal_number].iloc[0]
-        # print(df.columns)
+        traveler = traveler.fillna("")
 
-        # 回傳旅客資訊
-        return jsonify({
-            "personal_number": traveler["personal_number"],
-            "name": traveler["name"],
-            "surname": traveler["surname"],
-            "sex": traveler["sex"],
-            "date_of_birth": traveler["date_of_birth"],
-            "nationality": traveler["nationality"],
-            "passport_type": traveler["passport_type"],
-            "passport_number": traveler["passport_number"],
-            "issuing_country": traveler["issuing_country"],
-            "expiration_date": traveler["expiration_date"],
-        }), 200
+        return jsonify(traveler.to_dict()), 200
     except IndexError:
-        return jsonify({"error": "No traveler found"}), 404
+        return jsonify({"error": "Server can't find traveler"}), 404
 
 
 def add_trip_data(request):
@@ -212,8 +200,8 @@ def import_client_data(request):
                 # 檢查是否包含所需的欄位
                 required_columns = [
                     'personal_number', 'name', 'surname', 'sex', 'date_of_birth',
-                    'nationality', 'passport_type', 'passport_number',
-                    'issuing_country', 'expiration_date'
+                    'nationality', 'passport_number',
+                    'issuing_country', 'expiration_date', 'name_ch'
                 ]
 
                 if not all(column in df.columns for column in required_columns):

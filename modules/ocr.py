@@ -17,8 +17,9 @@ if not os.path.exists(CSV_FILE_PATH):
         csv_writer.writerow([
             "personal_number", "name", "surname", "sex", "date_of_birth", "nationality",
             "passport_number", "issuing_country",
-            "expiration_date"
+            "expiration_date", "name_ch",
         ])
+
 
 def compress_image(image_file):
     image = Image.open(image_file)
@@ -43,13 +44,25 @@ def compress_image(image_file):
     # 將壓縮後的圖片數據包裝回 FileStorage 物件中
     compressed_image_io = io.BytesIO(compressed_image_file)
     compressed_image_io.seek(0)
-    compressed_image = FileStorage(stream=compressed_image_io, filename=image_file.filename, content_type=image_file.content_type)
+    compressed_image = FileStorage(
+        stream=compressed_image_io, filename=image_file.filename, content_type=image_file.content_type)
 
     return compressed_image
+
+
+def field_check(dict, key):
+    if key in dict:
+        if key == 'DateOfBirth' or key == 'DateOfExpiration':
+            return dict[key].value.strftime("%Y-%m-%d")
+        return dict[key].value
+    else:
+        return ""
 
 # 圖片辨識
 # MRZ 資料解析
 # 儲存圖片到伺服器
+
+
 def ocr_passport(request):
     if 'image' not in request.files:
         return jsonify({"success": False, "error": "No image file found"}), 400
@@ -74,18 +87,15 @@ def ocr_passport(request):
         if document.fields.get("MachineReadableZone"):
             mrz = document.fields["MachineReadableZone"].value
 
-    # # 檢查是否有 LastName 欄位，若無則使用 FirstName
-    # if not mrz.get("LastName"):
-    #     mrz['LastName'] = mrz['FirstName'].value
-
-    user_info['name'] = mrz['FirstName'].value
-    user_info['surname'] = mrz['LastName'].value
-    user_info['sex'] = mrz['Sex'].value
-    user_info['nationality'] = mrz['Nationality'].value
-    user_info['passport_number'] = mrz['DocumentNumber'].value
-    user_info['date_of_birth'] = mrz['DateOfBirth'].value.strftime('%Y-%m-%d')
-    user_info['issuing_country'] = mrz['CountryRegion'].value
-    user_info['expiration_date'] = mrz['DateOfExpiration'].value.strftime('%Y-%m-%d')
+    user_info['name'] = field_check(mrz, 'FirstName')
+    user_info['surname'] = field_check(mrz, 'LastName')
+    user_info['sex'] = field_check(mrz, 'Sex')
+    user_info['nationality'] = field_check(mrz, 'Nationality')
+    user_info['passport_number'] = field_check(mrz, 'DocumentNumber')
+    user_info['date_of_birth'] = field_check(mrz, 'DateOfBirth')
+    user_info['issuing_country'] = field_check(mrz, 'CountryRegion')
+    user_info['expiration_date'] = field_check(mrz, 'DateOfExpiration')
+    user_info['name_ch'] = field_check(mrz, 'name_ch')
 
     mrz_content = document.fields["MachineReadableZone"].content
     mrz_content = mrz_content.replace(" ", "")
@@ -98,7 +108,8 @@ def ocr_passport(request):
 
     # 儲存圖片到伺服器
     image_file.seek(0)
-    image_path = os.path.join(IMAGE_FOLDER, f"passport_{user_info['personal_number']}.{image_file.filename.split('.')[-1]}")
+    image_path = os.path.join(
+        IMAGE_FOLDER, f"passport_{user_info['personal_number']}.{image_file.filename.split('.')[-1]}")
     image_file.save(image_path)
 
     return jsonify({"success": True, "result": user_info})

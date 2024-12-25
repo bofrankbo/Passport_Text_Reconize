@@ -1,36 +1,60 @@
-from flask import Blueprint, render_template, request, jsonify, send_file
+from flask import Blueprint, render_template, request, redirect, url_for, jsonify
 from .database import save_client_info, get_client_data, add_trip_data, export_trip_data, export_client_data, import_client_data, import_trip_data
 from .utils import suggest_id, suggest_trip
 from .tasks import upload_to_blob, clean_old_files, get_next_backup_time, get_blob_list
 from .ocr import ocr_passport
+from flask_httpauth import HTTPBasicAuth
 
 routes = Blueprint('routes', __name__)
+auth = HTTPBasicAuth()
+
+users = {
+    "admin": "900824"
+}
+
+
+@auth.get_password
+def get_pw(username):
+    if username in users:
+        return users.get(username)
+    return None
 
 
 @routes.route("/")
 def root():
     return render_template("website/passport.html")
 
+
 @routes.route("/passport.html")
 def passport():
     return render_template("website/passport.html")
 
-@routes.route("/admin.html")
+
+@routes.route('/backstage')
+def backstage():
+    return render_template("backstage/admin.html")
+
+
+@routes.route("/backstage/admin.html")
+@auth.login_required
 def admin():
     return render_template("backstage/admin.html")
 
 
-@routes.route("/client.html")
+@routes.route("/backstage/client.html")
+@auth.login_required
 def client():
     return render_template("backstage/client.html")
 
 
-@routes.route("/trip.html")
+@routes.route("/backstage/trip.html")
+@auth.login_required
 def trip():
     return render_template("backstage/trip.html")
 
 
-@routes.route("/backup.html")
+@routes.route("/backstage/backup.html")
+@auth.login_required
 def backup():
     next_backup_time = get_next_backup_time()
     blob_list = get_blob_list()
@@ -95,6 +119,7 @@ def clean_now():
     clean_old_files()
     return jsonify({"message": "Old files cleaned manually."})
 
-@routes.route("/process_passport",methods=["POST"])
+
+@routes.route("/process_passport", methods=["POST"])
 def process_passport():
     return ocr_passport(request)
