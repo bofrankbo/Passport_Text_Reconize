@@ -235,15 +235,15 @@
             for (let i = 1, row; row = table.rows[i]; i++) {
                 let client = {};
                 client.name_ch = row.cells[1].querySelector('input').value;
-                client.name = row.cells[2].querySelector('input').value;
-                client.surname = row.cells[3].querySelector('input').value;
-                client.sex = row.cells[4].querySelector('select').value;
-                client.date_of_birth = row.cells[5].querySelector('input').value;
-                client.nationality = row.cells[6].querySelector('input').value;
-                client.passport_number = row.cells[7].querySelector('input').value;
-                client.issuing_country = row.cells[8].querySelector('input').value;
-                client.expiration_date = row.cells[9].querySelector('input').value;
-                client.personal_number = row.cells[10].querySelector('input').value;
+                client.personal_number = row.cells[2].querySelector('input').value;
+                client.name = row.cells[3].querySelector('input').value;
+                client.surname = row.cells[4].querySelector('input').value;
+                client.sex = row.cells[5].querySelector('select').value;
+                client.date_of_birth = row.cells[6].querySelector('input').value;
+                client.nationality = row.cells[7].querySelector('input').value;
+                client.passport_number = row.cells[8].querySelector('input').value;
+                client.issuing_country = row.cells[9].querySelector('input').value;
+                client.expiration_date = row.cells[10].querySelector('input').value;
                 clientsData.push(client);
             }
         }
